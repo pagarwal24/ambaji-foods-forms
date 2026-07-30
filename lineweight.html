@@ -566,7 +566,7 @@
                     </div>
                     <div class="approval-card">
                         <strong>Parle Executive</strong>
-                        <input id="parleName" type="text" placeholder="Full name">
+                        <input id="parleName" type="text" value="Prateek Agarwal" placeholder="Full name">
                         <input id="parleMobile" type="tel" inputmode="numeric" value="9795500700" placeholder="Mobile number">
                         <span class="approval-state" id="parleStatus">Pending</span>
                         <button class="approval-share" id="shareParleApproval" type="button">Send approval on WhatsApp</button>
@@ -1001,8 +1001,16 @@
                 const production = approvalState.production?.status || 'pending';
                 const parle = approvalState.parle?.status || 'pending';
                 if (production === 'rejected' || parle === 'rejected') return 'rejected';
-                if (production === 'approved' && parle === 'approved') return 'approved';
+                if (parle === 'approved') return 'approved';
                 return 'pending';
+            }
+            function approvalDateTime(value) {
+                if (!value) return '';
+                const date = new Date(value);
+                return isNaN(date) ? '' : date.toLocaleString('en-IN', {
+                    day:'2-digit', month:'2-digit', year:'numeric',
+                    hour:'2-digit', minute:'2-digit', hour12:true
+                });
             }
             function whatsappNumber(value) {
                 const digits = String(value || '').replace(/\D/g, '');
@@ -1093,7 +1101,7 @@
                 document.getElementById('fillerMobile').value = s.fillerMobile||'';
                 document.getElementById('productionName').value = s.productionName||'';
                 document.getElementById('productionMobile').value = s.productionMobile||'9838654270';
-                document.getElementById('parleName').value = s.parleName||'';
+                document.getElementById('parleName').value = s.parleName||s.approvals?.parle?.name||'Prateek Agarwal';
                 document.getElementById('parleMobile').value = s.parleMobile||'9795500700';
                 approvalState = s.approvals || approvalState;
                 updateApprovalDisplay();
@@ -1498,8 +1506,8 @@ function buildSectionHtml(sectionKey, title, icon, weightsArr, chartImg, headerC
                             ${sections.join('')}
                             <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:14px; margin-top:10px; margin-bottom:8px;">
                                 <div style="border:1.5px solid #000000; border-radius:12px; min-height:62px; padding:8px 10px; text-align:center; font-size:12px; color:#000000;"><strong>Document Filler</strong><br>${escapeHtml(document.getElementById('fillerName').value||'—')}<br><b>${escapeHtml(approvalState.filler?.status||'not submitted')}</b></div>
-                                <div style="border:1.5px solid #000000; border-radius:12px; min-height:62px; padding:8px 10px; text-align:center; font-size:12px; color:#000000;"><strong>Parle Executive</strong><br>${escapeHtml(document.getElementById('parleName').value||'—')}<br><b>${escapeHtml(approvalState.parle?.status||'pending')}</b></div>
-                                <div style="border:1.5px solid #000000; border-radius:12px; min-height:62px; padding:8px 10px; text-align:center; font-size:12px; color:#000000;"><strong>Production Manager</strong><br>${escapeHtml(document.getElementById('productionName').value||'—')}<br><b>${escapeHtml(approvalState.production?.status||'pending')}</b></div>
+                                <div style="border:1.5px solid ${approvalState.parle?.status==='approved'?'#168a45':'#000000'}; border-radius:12px; min-height:62px; padding:8px 10px; text-align:center; font-size:12px; color:${approvalState.parle?.status==='approved'?'#126b37':'#000000'}; background:${approvalState.parle?.status==='approved'?'#e8f8ee':'#ffffff'};"><strong>Parle Executive</strong><br>${escapeHtml(approvalState.parle?.name||document.getElementById('parleName').value||'Prateek Agarwal')}<br><b>${escapeHtml(approvalState.parle?.status||'pending')}</b>${approvalState.parle?.signedAt?`<br>${escapeHtml(approvalDateTime(approvalState.parle.signedAt))}`:''}</div>
+                                <div style="border:1.5px solid ${approvalState.production?.status==='approved'?'#d6a84b':'#000000'}; border-radius:12px; min-height:62px; padding:8px 10px; text-align:center; font-size:12px; color:#000000; background:${approvalState.production?.status==='approved'?'#fff4d6':'#ffffff'};"><strong>Production Manager</strong><br>${escapeHtml(document.getElementById('productionName').value||'—')}<br><b>${escapeHtml(approvalState.production?.status||'pending')}</b>${approvalState.production?.signedAt?`<br>${escapeHtml(approvalDateTime(approvalState.production.signedAt))}`:''}</div>
                             </div>
                             <div style="text-align:center; margin-top:6px; padding-top:8px; border-top:1px solid #000000; font-size:11px; color:#000000;">
                                 <strong>Line Weight Report Management System By Prateek Agarwal</strong>
