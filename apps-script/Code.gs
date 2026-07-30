@@ -4,6 +4,29 @@ const DATA_SHEET = "Form Records";
 
 function doGet(e) {
   const params = (e && e.parameter) || {};
+  const action = String(params.action || "list");
+  if (action === "approvalCode") {
+    const callback = String(params.callback || "callback").replace(/[^\w$.]/g, "");
+    let result = { ok: false, status: "invalid", message: "This approval request could not be verified." };
+    try {
+      const decoded = Utilities.newBlob(Utilities.base64DecodeWebSafe(String(params.code || ""))).getDataAsString();
+      const approval = JSON.parse(decoded);
+      const ok = recordApproval_(
+        String(approval.id || ""),
+        String(approval.role || ""),
+        String(approval.decision || ""),
+        String(approval.token || "")
+      );
+      result = {
+        ok: ok,
+        status: ok ? String(approval.decision || "") : "invalid",
+        message: ok ? "Your decision has been recorded." : "This approval link is invalid or has expired."
+      };
+    } catch (error) {}
+    return ContentService
+      .createTextOutput(callback + "(" + JSON.stringify(result) + ");")
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
   if (params.a) {
     try {
       const decoded = Utilities.newBlob(Utilities.base64DecodeWebSafe(String(params.a))).getDataAsString();
@@ -18,7 +41,6 @@ function doGet(e) {
       return handleApproval_("", "", "", "");
     }
   }
-  const action = String(params.action || "list");
   if (action === "approval") {
     return handleApproval_(
       String(e.parameter.id || ""),
