@@ -204,7 +204,7 @@ function trashFileByUrl_(url) {
   try { DriveApp.getFileById(match[0]).setTrashed(true); } catch (error) {}
 }
 
-function authorizePdfStorage_() {
+function authorizePdfStorage() {
   const document = DocumentApp.create("Ambaji Foods PDF Storage Authorization");
   document.getBody().appendParagraph("Authorization check");
   document.saveAndClose();
