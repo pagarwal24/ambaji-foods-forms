@@ -530,6 +530,7 @@
         .approval-card strong { display: block; margin-bottom: 8px; }
         .approval-card input { width: 100%; margin: 4px 0; padding: 9px 11px; border: 1px solid #000000; border-radius: 18px; }
         .approval-state { display: inline-block; margin-top: 7px; padding: 5px 9px; border-radius: 999px; background: #f2f2f2; color: #000000; font-size: 0.75rem; font-weight: 800; }
+        .approval-share { display:none; width:100%; margin-top:8px; padding:9px 11px; border:0; border-radius:18px; background:#168a45; color:#ffffff; font-weight:800; cursor:pointer; }
         @media (max-width: 760px) { .approval-grid { grid-template-columns: 1fr; } }
         @media print { .back-home, .drive-status { display: none !important; } }
     </style>
@@ -547,25 +548,27 @@
 
             <div class="approval-panel">
                 <h2>Digital Approval Team</h2>
-                <p>Enter the concerned team details. Saving the session emails the parameters and secure approval links.</p>
+                <p>Save the session, then send each concerned person a secure Approve/Reject link on WhatsApp.</p>
                 <div class="approval-grid">
                     <div class="approval-card">
                         <strong>Document Filler</strong>
                         <input id="fillerName" type="text" placeholder="Full name">
-                        <input id="fillerEmail" type="email" placeholder="Email address">
+                        <input id="fillerMobile" type="tel" inputmode="numeric" placeholder="Mobile number">
                         <span class="approval-state" id="fillerStatus">Not submitted</span>
                     </div>
                     <div class="approval-card">
                         <strong>Production Manager</strong>
                         <input id="productionName" type="text" placeholder="Full name">
-                        <input id="productionEmail" type="email" placeholder="Email address">
+                        <input id="productionMobile" type="tel" inputmode="numeric" value="9838654270" placeholder="Mobile number">
                         <span class="approval-state" id="productionStatus">Pending</span>
+                        <button class="approval-share" id="shareProductionApproval" type="button">Send approval on WhatsApp</button>
                     </div>
                     <div class="approval-card">
                         <strong>Parle Executive</strong>
                         <input id="parleName" type="text" placeholder="Full name">
-                        <input id="parleEmail" type="email" placeholder="Email address">
+                        <input id="parleMobile" type="tel" inputmode="numeric" value="9795500700" placeholder="Mobile number">
                         <span class="approval-state" id="parleStatus">Pending</span>
+                        <button class="approval-share" id="shareParleApproval" type="button">Send approval on WhatsApp</button>
                     </div>
                 </div>
             </div>
@@ -991,15 +994,50 @@
                     element.style.color = state.status === 'approved' ? '#126b37' : state.status === 'rejected' ? '#a1261d' : '#000000';
                 });
             }
+            function whatsappNumber(value) {
+                const digits = String(value || '').replace(/\D/g, '');
+                return digits.length === 10 ? '91' + digits : digits;
+            }
+            function approvalLink(role, decision) {
+                const state = approvalState[role] || {};
+                return CLOUD_URL + '?action=approval&id=' + encodeURIComponent('lineweight-session-latest') +
+                    '&role=' + encodeURIComponent(role) + '&decision=' + encodeURIComponent(decision) +
+                    '&token=' + encodeURIComponent(state.token || '');
+            }
+            function shareApprovalOnWhatsApp(role) {
+                const roleLabel = role === 'production' ? 'Production Manager' : 'Parle Executive';
+                const mobileId = role === 'production' ? 'productionMobile' : 'parleMobile';
+                const mobile = whatsappNumber(document.getElementById(mobileId).value);
+                const state = approvalState[role] || {};
+                if (!mobile || !state.token) {
+                    showToast('Save the session before sending the WhatsApp approval.');
+                    return;
+                }
+                const message = `*Ambaji Foods Line Weight Report Approval*\n\n` +
+                    `Document: AFIPL/PRD/FRM/20\nRole: ${roleLabel}\n` +
+                    `Date: ${document.getElementById('ovenDate').value || document.getElementById('stackerDate').value || '—'}\n` +
+                    `Shift: ${document.getElementById('ovenShift').value || document.getElementById('stackerShift').value || '—'}\n\n` +
+                    `Please review the recorded parameters and select one option:\n\n` +
+                    `✅ Approve: ${approvalLink(role, 'approved')}\n\n` +
+                    `❌ Reject: ${approvalLink(role, 'rejected')}\n\n` +
+                    `Apps By Prateek Agarwal`;
+                window.open(`https://wa.me/${mobile}?text=${encodeURIComponent(message)}`, '_blank');
+            }
+            function showApprovalShareButtons() {
+                document.getElementById('shareProductionApproval').style.display = approvalState.production?.token ? 'block' : 'none';
+                document.getElementById('shareParleApproval').style.display = approvalState.parle?.token ? 'block' : 'none';
+            }
+            document.getElementById('shareProductionApproval').onclick = () => shareApprovalOnWhatsApp('production');
+            document.getElementById('shareParleApproval').onclick = () => shareApprovalOnWhatsApp('parle');
             function collectSessionData() {
                 return {
                     ovenWeights, stackerWeights,
                     fillerName:document.getElementById('fillerName').value,
-                    fillerEmail:document.getElementById('fillerEmail').value,
+                    fillerMobile:document.getElementById('fillerMobile').value,
                     productionName:document.getElementById('productionName').value,
-                    productionEmail:document.getElementById('productionEmail').value,
+                    productionMobile:document.getElementById('productionMobile').value,
                     parleName:document.getElementById('parleName').value,
-                    parleEmail:document.getElementById('parleEmail').value,
+                    parleMobile:document.getElementById('parleMobile').value,
                     approvals:approvalState,
                     ovenFilledBy:document.getElementById('ovenFilledBy').value,
                     ovenVariety:document.getElementById('ovenVariety').value,
@@ -1025,13 +1063,14 @@
                 if(s.ovenWeights) { ovenWeights = s.ovenWeights; renderTable('oven'); }
                 if(s.stackerWeights) { stackerWeights = s.stackerWeights; renderTable('stacker'); }
                 document.getElementById('fillerName').value = s.fillerName||'';
-                document.getElementById('fillerEmail').value = s.fillerEmail||'';
+                document.getElementById('fillerMobile').value = s.fillerMobile||'';
                 document.getElementById('productionName').value = s.productionName||'';
-                document.getElementById('productionEmail').value = s.productionEmail||'';
+                document.getElementById('productionMobile').value = s.productionMobile||'9838654270';
                 document.getElementById('parleName').value = s.parleName||'';
-                document.getElementById('parleEmail').value = s.parleEmail||'';
+                document.getElementById('parleMobile').value = s.parleMobile||'9795500700';
                 approvalState = s.approvals || approvalState;
                 updateApprovalDisplay();
+                showApprovalShareButtons();
                 document.getElementById('ovenFilledBy').value = s.ovenFilledBy||'';
                 document.getElementById('ovenVariety').value = s.ovenVariety||'';
                 document.getElementById('ovenRemarks').value = s.ovenRemarks||'';
@@ -1067,24 +1106,24 @@
             document.getElementById('saveSessionBtn').onclick = async () => {
                 const button = document.getElementById('saveSessionBtn');
                 const now = new Date().toISOString();
-                const productionEmail = document.getElementById('productionEmail').value.trim();
-                const parleEmail = document.getElementById('parleEmail').value.trim();
+                const productionMobile = document.getElementById('productionMobile').value.trim();
+                const parleMobile = document.getElementById('parleMobile').value.trim();
                 approvalState = {
                     filler:{
                         name:document.getElementById('fillerName').value.trim(),
-                        email:document.getElementById('fillerEmail').value.trim(),
+                        mobile:document.getElementById('fillerMobile').value.trim(),
                         status:'submitted',
                         signedAt:now
                     },
                     production:{
                         name:document.getElementById('productionName').value.trim(),
-                        email:productionEmail,
+                        mobile:productionMobile,
                         status:'pending',
                         token:approvalToken()
                     },
                     parle:{
                         name:document.getElementById('parleName').value.trim(),
-                        email:parleEmail,
+                        mobile:parleMobile,
                         status:'pending',
                         token:approvalToken()
                     }
@@ -1099,7 +1138,8 @@
                     const record = {id:'lineweight-session-latest',formId:'line-weight-control',docId:'AFIPL/PRD/FRM/20',data:session,createdAt:now,updatedAt:now};
                     await fetch(CLOUD_URL,{method:'POST',mode:'no-cors',body:new URLSearchParams({action:'upsert',record:JSON.stringify(record)})});
                     document.getElementById('driveStatus').textContent = 'Saved to Google Drive';
-                    showToast('✅ Session saved to Google Drive');
+                    showApprovalShareButtons();
+                    showToast('✅ Saved. Send the approval links on WhatsApp.');
                 } catch (error) {
                     document.getElementById('driveStatus').textContent = 'Drive unavailable · browser backup saved';
                     showToast('Browser backup saved; Drive could not be reached');
