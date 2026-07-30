@@ -40,6 +40,16 @@ function doPost(e) {
   if (action === "upsert") upsertRecord_(JSON.parse(params.record || "{}"));
   if (action === "delete") deleteRecord_(String(params.id || ""));
   if (action === "upload") uploadImage_(params);
+  if (action === "approvalCode") {
+    const decoded = Utilities.newBlob(Utilities.base64DecodeWebSafe(String(params.code || ""))).getDataAsString();
+    const approval = JSON.parse(decoded);
+    recordApproval_(
+      String(approval.id || ""),
+      String(approval.role || ""),
+      String(approval.decision || ""),
+      String(approval.token || "")
+    );
+  }
   return ContentService.createTextOutput("OK").setMimeType(ContentService.MimeType.TEXT);
 }
 
@@ -165,11 +175,26 @@ function summaryRow_(label, value) {
 }
 
 function handleApproval_(id, role, decision, token) {
-  const allowedRoles = ["production", "parle"];
-  const allowedDecisions = ["approved", "rejected"];
   let title = "Approval link invalid";
   let message = "This approval request could not be verified.";
-  let success = false;
+  const success = recordApproval_(id, role, decision, token);
+  if (success) {
+    title = decision === "approved" ? "Report approved" : "Report rejected";
+    message = "Your " + decision + " decision has been recorded with the date and time.";
+  }
+  return HtmlService.createHtmlOutput(
+    "<!doctype html><html><head><meta name='viewport' content='width=device-width,initial-scale=1'>" +
+    "<title>" + escapeHtml_(title) + "</title></head><body style='margin:0;background:#f5f5f5;font-family:Arial,sans-serif'>" +
+    "<div style='max-width:560px;margin:70px auto;background:#fff;border:2px solid #000;border-radius:20px;padding:30px;text-align:center'>" +
+    "<div style='font-size:48px'>" + (success ? "✓" : "!") + "</div><h1>" + escapeHtml_(title) + "</h1>" +
+    "<p>" + escapeHtml_(message) + "</p><p><b>Ambaji Foods · AFIPL/PRD/FRM/20</b></p>" +
+    "<p style='font-size:12px;color:#666'>Apps By Prateek Agarwal</p></div></body></html>"
+  );
+}
+
+function recordApproval_(id, role, decision, token) {
+  const allowedRoles = ["production", "parle"];
+  const allowedDecisions = ["approved", "rejected"];
   if (id && allowedRoles.indexOf(role) >= 0 && allowedDecisions.indexOf(decision) >= 0 && token) {
     const sheet = sheet_();
     const lastRow = sheet.getLastRow();
@@ -188,21 +213,12 @@ function handleApproval_(id, role, decision, token) {
           data.approvals = approvals;
           sheet.getRange(row, 4).setValue(JSON.stringify(data));
           sheet.getRange(row, 6).setValue(new Date().toISOString());
-          title = decision === "approved" ? "Report approved" : "Report rejected";
-          message = "Your " + decision + " decision has been recorded with the date and time.";
-          success = true;
+          return true;
         }
       }
     }
   }
-  return HtmlService.createHtmlOutput(
-    "<!doctype html><html><head><meta name='viewport' content='width=device-width,initial-scale=1'>" +
-    "<title>" + escapeHtml_(title) + "</title></head><body style='margin:0;background:#f5f5f5;font-family:Arial,sans-serif'>" +
-    "<div style='max-width:560px;margin:70px auto;background:#fff;border:2px solid #000;border-radius:20px;padding:30px;text-align:center'>" +
-    "<div style='font-size:48px'>" + (success ? "✓" : "!") + "</div><h1>" + escapeHtml_(title) + "</h1>" +
-    "<p>" + escapeHtml_(message) + "</p><p><b>Ambaji Foods · AFIPL/PRD/FRM/20</b></p>" +
-    "<p style='font-size:12px;color:#666'>Apps By Prateek Agarwal</p></div></body></html>"
-  );
+  return false;
 }
 
 function escapeHtml_(value) {
