@@ -34,13 +34,14 @@
       const padded=value.replace(/-/g,'+').replace(/_/g,'/')+'==='.slice((value.length+3)%4);
       return JSON.parse(atob(padded));
     }
+    function safe(value){return String(value||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
     async function record(){
       try{
         const approval=decode(code);
-        const role=approval.role==='production'?'Production Manager':approval.role==='parle'?'Parle Executive':'Unknown role';
+        const validRole=approval.role==='production'||approval.role==='parle';
         const decision=approval.decision==='approved'?'Approved':approval.decision==='rejected'?'Rejected':'Invalid';
-        if(role==='Unknown role'||decision==='Invalid'||!approval.token) throw new Error('Invalid link');
-        document.getElementById('details').innerHTML=`<div><b>Document:</b> AFIPL/PRD/FRM/20</div><div><b>Role:</b> ${role}</div><div><b>Decision:</b> ${decision}</div>`;
+        if(!validRole||decision==='Invalid'||!approval.token) throw new Error('Invalid link');
+        document.getElementById('details').innerHTML=`<div><b>Form:</b> ${safe(approval.title||'Ambaji Foods Record')}</div><div><b>Document:</b> ${safe(approval.doc||'—')}</div><div><b>Decision:</b> ${decision}</div>`;
         await fetch(CLOUD_URL,{method:'POST',mode:'no-cors',body:new URLSearchParams({action:'approvalCode',code})});
         document.getElementById('mark').textContent='✓';
         document.getElementById('mark').style.background=approval.decision==='approved'?'#168a45':'#a1261d';
