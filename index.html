@@ -188,6 +188,7 @@ const CLOUD_URL="https://script.google.com/macros/s/AKfycbyi8DlI-5tHZUy8wOW35CJF
     function wrapCanvasText(ctx,text,maxWidth){const words=String(text||"—").split(/\s+/),lines=[];let line="";for(const word of words){const test=line?line+" "+word:word;if(ctx.measureText(test).width>maxWidth&&line){lines.push(line);line=word}else line=test}if(line)lines.push(line);return lines}
     async function createRecordImage(){
       const data=currentFormData(),filled=current.fields.filter(f=>String(data[f.key]||"").trim());
+      const imageStatus=editing?(load().find(r=>r.id===editing)?.data?.approvalStatus||"pending"):"pending";
       const width=1200,pad=70,rowGap=18,labelW=330,valueW=width-pad*2-labelW-36;
       const measure=document.createElement("canvas").getContext("2d");measure.font="28px system-ui";
       let contentHeight=0;for(const f of filled){const lines=wrapCanvasText(measure,data[f.key],valueW);contentHeight+=Math.max(54,lines.length*34)+rowGap}
@@ -196,11 +197,13 @@ const CLOUD_URL="https://script.google.com/macros/s/AKfycbyi8DlI-5tHZUy8wOW35CJF
       ctx.fillStyle="#174b3a";ctx.font="900 34px system-ui";ctx.textAlign="center";ctx.fillText("AF",pad+46,106);ctx.textAlign="left";ctx.fillStyle="#fff";ctx.font="800 34px system-ui";ctx.fillText("AMBAJI FOODS PVT. LTD.",pad+120,85);
       ctx.fillStyle="#d8e7e1";ctx.font="22px system-ui";ctx.fillText("Quality & Operations Record",pad+120,125);ctx.fillStyle="#fff";ctx.font="800 30px system-ui";ctx.fillText(current.title,pad,180);
       ctx.fillStyle="#e7efe9";ctx.font="700 20px system-ui";ctx.textAlign="right";ctx.fillText(current.doc,width-pad,180);ctx.textAlign="left";
+      const statusLabel=imageStatus.toUpperCase(),statusColor=imageStatus==="approved"?"#168a45":imageStatus==="rejected"?"#a1261d":"#d6a84b";
+      ctx.fillStyle=statusColor;ctx.fillRect(width-pad-250,48,250,54);ctx.fillStyle=imageStatus==="pending"?"#17312a":"#ffffff";ctx.font="900 24px system-ui";ctx.textAlign="center";ctx.fillText("STATUS: "+statusLabel,width-pad-125,83);ctx.textAlign="left";
       let y=250;ctx.font="700 24px system-ui";for(const f of filled){const lines=wrapCanvasText(ctx,data[f.key],valueW),rowH=Math.max(54,lines.length*34);ctx.fillStyle="#e7efe9";ctx.fillRect(pad,y,labelW,rowH);ctx.fillStyle="#fff";ctx.fillRect(pad+labelW,y,width-pad*2-labelW,rowH);ctx.strokeStyle="#cbd5d0";ctx.strokeRect(pad,y,width-pad*2,rowH);ctx.fillStyle="#174b3a";ctx.font="700 22px system-ui";ctx.fillText(f.label,pad+18,y+35);ctx.fillStyle="#17312a";ctx.font="24px system-ui";lines.forEach((line,i)=>ctx.fillText(line,pad+labelW+18,y+35+i*34));y+=rowH+rowGap}
       ctx.fillStyle="#64746d";ctx.font="18px system-ui";ctx.fillText("Generated "+new Date().toLocaleString(),pad,height-48);ctx.textAlign="right";ctx.font="700 18px system-ui";ctx.fillText("Apps By Prateek Agarwal",width-pad,height-48);ctx.textAlign="left";
       return await new Promise(resolve=>canvas.toBlob(resolve,"image/png",1));
     }
-    function imageFileName(){return "Ambaji_Foods_"+current.title.replace(/[^a-z0-9]+/gi,"_")+"_"+new Date().toISOString().slice(0,10)+".png"}
+    function imageFileName(){const status=editing?(load().find(r=>r.id===editing)?.data?.approvalStatus||"pending"):"pending";return status.toUpperCase()+"_Ambaji_Foods_"+current.title.replace(/[^a-z0-9]+/gi,"_")+"_"+new Date().toISOString().slice(0,10)+".png"}
     function blobToBase64(blob){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(",")[1]);reader.onerror=reject;reader.readAsDataURL(blob)})}
     async function uploadRecordImage(blob,record){await postCloud({action:"upload",recordId:record.id,fileName:imageFileName(),mimeType:"image/png",base64:await blobToBase64(blob)})}
     function downloadBlob(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),800)}
