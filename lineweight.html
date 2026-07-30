@@ -1130,6 +1130,14 @@
                     document.head.appendChild(script);
                 });
             }
+            function blobToBase64(blob) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(String(reader.result).split(',')[1]);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            }
             document.getElementById('saveSessionBtn').onclick = async () => {
                 const button = document.getElementById('saveSessionBtn');
                 const now = new Date().toISOString();
@@ -1164,6 +1172,16 @@
                 try {
                     const record = {id:'lineweight-session-latest',formId:'line-weight-control',docId:'AFIPL/PRD/FRM/20',data:session,createdAt:now,updatedAt:now};
                     await fetch(CLOUD_URL,{method:'POST',mode:'no-cors',body:new URLSearchParams({action:'upsert',record:JSON.stringify(record)})});
+                    const reportImage = await generateA4ReportImage({downloadImage:false,shareImage:false,theme:'color'});
+                    if (reportImage?.blob) {
+                        await fetch(CLOUD_URL,{method:'POST',mode:'no-cors',body:new URLSearchParams({
+                            action:'upload',
+                            recordId:record.id,
+                            fileName:reportImage.fileName,
+                            mimeType:'image/png',
+                            base64:await blobToBase64(reportImage.blob)
+                        })});
+                    }
                     document.getElementById('driveStatus').textContent = 'Saved to Google Drive';
                     showApprovalShareButtons();
                     showToast('✅ Saved. Send the approval links on WhatsApp.');
