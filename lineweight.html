@@ -516,6 +516,21 @@
             font-size: 0.8rem;
             font-weight: 800;
         }
+        .approval-panel {
+            background: #ffffff;
+            border: 2px solid #000000;
+            border-radius: 28px;
+            padding: 18px 20px;
+            margin: 0 0 22px;
+        }
+        .approval-panel h2 { margin: 0 0 6px; font-size: 1.15rem; }
+        .approval-panel > p { margin: 0 0 14px; color: #444444; font-size: 0.88rem; }
+        .approval-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+        .approval-card { border: 1px solid #000000; border-radius: 18px; padding: 12px; }
+        .approval-card strong { display: block; margin-bottom: 8px; }
+        .approval-card input { width: 100%; margin: 4px 0; padding: 9px 11px; border: 1px solid #000000; border-radius: 18px; }
+        .approval-state { display: inline-block; margin-top: 7px; padding: 5px 9px; border-radius: 999px; background: #f2f2f2; color: #000000; font-size: 0.75rem; font-weight: 800; }
+        @media (max-width: 760px) { .approval-grid { grid-template-columns: 1fr; } }
         @media print { .back-home, .drive-status { display: none !important; } }
     </style>
 </head>
@@ -528,6 +543,31 @@
                 <h1>Ambaji Foods (India) Private Limited, Kanpur</h1>
                 <div>Process Parameter Line Weight Quality Report</div>
                 <div style="margin-top:8px;font-size:14px;line-height:1.5;">Version: 2.00 &nbsp;|&nbsp; Re-Issue Date: 01/04/26 &nbsp;|&nbsp; Document ID: AFIPL/PRD/FRM/20</div>
+            </div>
+
+            <div class="approval-panel">
+                <h2>Digital Approval Team</h2>
+                <p>Enter the concerned team details. Saving the session emails the parameters and secure approval links.</p>
+                <div class="approval-grid">
+                    <div class="approval-card">
+                        <strong>Document Filler</strong>
+                        <input id="fillerName" type="text" placeholder="Full name">
+                        <input id="fillerEmail" type="email" placeholder="Email address">
+                        <span class="approval-state" id="fillerStatus">Not submitted</span>
+                    </div>
+                    <div class="approval-card">
+                        <strong>Production Manager</strong>
+                        <input id="productionName" type="text" placeholder="Full name">
+                        <input id="productionEmail" type="email" placeholder="Email address">
+                        <span class="approval-state" id="productionStatus">Pending</span>
+                    </div>
+                    <div class="approval-card">
+                        <strong>Parle Executive</strong>
+                        <input id="parleName" type="text" placeholder="Full name">
+                        <input id="parleEmail" type="email" placeholder="Email address">
+                        <span class="approval-state" id="parleStatus">Pending</span>
+                    </div>
+                </div>
             </div>
 
             <div class="tabs">
@@ -931,9 +971,36 @@
             document.getElementById('resetStackerBtn').onclick = () => { stackerWeights.fill(''); renderTable('stacker'); updateStacker(); document.getElementById('stackerFilledBy').value=''; document.getElementById('stackerVariety').value=''; document.getElementById('stackerRemarks').value=''; };
             document.getElementById('globalResetBtn').onclick = () => { ovenWeights.fill(''); stackerWeights.fill(''); renderTable('oven'); renderTable('stacker'); updateOven(); updateStacker(); };
             const CLOUD_URL = 'https://script.google.com/macros/s/AKfycbyi8DlI-5tHZUy8wOW35CJFpH65bsDU6Vx-H_ceNsGl5RzjvXAprYmWHXbB4G31PDw0/exec';
+            let approvalState = {
+                filler:{status:'not submitted'},
+                production:{status:'pending'},
+                parle:{status:'pending'}
+            };
+            function approvalToken() {
+                const bytes = new Uint8Array(18);
+                crypto.getRandomValues(bytes);
+                return Array.from(bytes, b => b.toString(16).padStart(2,'0')).join('');
+            }
+            function updateApprovalDisplay() {
+                const labels = {submitted:'Submitted',pending:'Pending approval',approved:'Approved',rejected:'Rejected','not submitted':'Not submitted'};
+                ['filler','production','parle'].forEach(role => {
+                    const state = approvalState[role] || {};
+                    const element = document.getElementById(role + 'Status');
+                    element.textContent = labels[state.status] || state.status || 'Pending';
+                    element.style.background = state.status === 'approved' ? '#e8f8ee' : state.status === 'rejected' ? '#ffe4e1' : '#f2f2f2';
+                    element.style.color = state.status === 'approved' ? '#126b37' : state.status === 'rejected' ? '#a1261d' : '#000000';
+                });
+            }
             function collectSessionData() {
                 return {
                     ovenWeights, stackerWeights,
+                    fillerName:document.getElementById('fillerName').value,
+                    fillerEmail:document.getElementById('fillerEmail').value,
+                    productionName:document.getElementById('productionName').value,
+                    productionEmail:document.getElementById('productionEmail').value,
+                    parleName:document.getElementById('parleName').value,
+                    parleEmail:document.getElementById('parleEmail').value,
+                    approvals:approvalState,
                     ovenFilledBy:document.getElementById('ovenFilledBy').value,
                     ovenVariety:document.getElementById('ovenVariety').value,
                     ovenRemarks:document.getElementById('ovenRemarks').value,
@@ -957,6 +1024,14 @@
             function applySessionData(s) {
                 if(s.ovenWeights) { ovenWeights = s.ovenWeights; renderTable('oven'); }
                 if(s.stackerWeights) { stackerWeights = s.stackerWeights; renderTable('stacker'); }
+                document.getElementById('fillerName').value = s.fillerName||'';
+                document.getElementById('fillerEmail').value = s.fillerEmail||'';
+                document.getElementById('productionName').value = s.productionName||'';
+                document.getElementById('productionEmail').value = s.productionEmail||'';
+                document.getElementById('parleName').value = s.parleName||'';
+                document.getElementById('parleEmail').value = s.parleEmail||'';
+                approvalState = s.approvals || approvalState;
+                updateApprovalDisplay();
                 document.getElementById('ovenFilledBy').value = s.ovenFilledBy||'';
                 document.getElementById('ovenVariety').value = s.ovenVariety||'';
                 document.getElementById('ovenRemarks').value = s.ovenRemarks||'';
@@ -991,13 +1066,36 @@
             }
             document.getElementById('saveSessionBtn').onclick = async () => {
                 const button = document.getElementById('saveSessionBtn');
+                const now = new Date().toISOString();
+                const productionEmail = document.getElementById('productionEmail').value.trim();
+                const parleEmail = document.getElementById('parleEmail').value.trim();
+                approvalState = {
+                    filler:{
+                        name:document.getElementById('fillerName').value.trim(),
+                        email:document.getElementById('fillerEmail').value.trim(),
+                        status:'submitted',
+                        signedAt:now
+                    },
+                    production:{
+                        name:document.getElementById('productionName').value.trim(),
+                        email:productionEmail,
+                        status:'pending',
+                        token:approvalToken()
+                    },
+                    parle:{
+                        name:document.getElementById('parleName').value.trim(),
+                        email:parleEmail,
+                        status:'pending',
+                        token:approvalToken()
+                    }
+                };
+                updateApprovalDisplay();
                 const session = collectSessionData();
                 localStorage.setItem('ambajiQC_full', JSON.stringify(session));
                 button.disabled = true;
                 button.textContent = 'Saving to Drive…';
                 document.getElementById('driveStatus').textContent = 'Saving to Google Drive…';
                 try {
-                    const now = new Date().toISOString();
                     const record = {id:'lineweight-session-latest',formId:'line-weight-control',docId:'AFIPL/PRD/FRM/20',data:session,createdAt:now,updatedAt:now};
                     await fetch(CLOUD_URL,{method:'POST',mode:'no-cors',body:new URLSearchParams({action:'upsert',record:JSON.stringify(record)})});
                     document.getElementById('driveStatus').textContent = 'Saved to Google Drive';
@@ -1010,6 +1108,7 @@
                     button.textContent = '💾 Save Session';
                 }
             };
+            updateApprovalDisplay();
             document.getElementById('loadSessionBtn').onclick = async () => {
                 const button = document.getElementById('loadSessionBtn');
                 button.disabled = true;
@@ -1219,8 +1318,8 @@ function buildReadingTable(weights, std, headColor) {
                                 let wt = weights[idx] !== '' ? weights[idx] : '—';
                                 let displayWt = (wt !== '—' && !isNaN(wt)) ? parseFloat(wt).toFixed(2) : '—';
                                 let isBelow = (wt !== '—' && !isNaN(wt) && parseFloat(wt) < std);
-                                html += `<td style="border:1px solid #ddd; padding:4px 2px; text-align:center; font-weight:600;">${idx+1}</td>`;
-                                html += `<td style="border:1px solid #ddd; padding:4px 2px; text-align:center; ${isBelow ? (isBW ? 'background:#ffffff; color:#000000; font-weight:700; text-decoration:underline;' : 'background:#ffe0e0; color:#b13b2d; font-weight:700;') : ''}">${displayWt}</td>`;
+                                html += `<td style="border:1px solid #8a8a8a; background:#ffffff; color:#000000; padding:4px 2px; text-align:center; font-weight:800;">${idx+1}</td>`;
+                                html += `<td style="border:1px solid #8a8a8a; background:${isBelow && !isBW ? '#ffd6d2' : '#ffffff'}; color:${isBelow && !isBW ? '#8f160f' : '#000000'}; padding:4px 2px; text-align:center; font-weight:${isBelow ? '900' : '700'}; ${isBelow && isBW ? 'text-decoration:underline;' : ''}">${displayWt}</td>`;
                             }
                             html += `</tr>`;
                         }
@@ -1311,9 +1410,9 @@ function buildSectionHtml(sectionKey, title, icon, weightsArr, chartImg, headerC
                             </div>
                             ${sections.join('')}
                             <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:14px; margin-top:10px; margin-bottom:8px;">
-                                <div style="border:1.5px solid #000000; border-radius:12px; height:62px; padding:8px 10px; display:flex; align-items:flex-end; justify-content:center; font-size:13px; font-weight:700; color:#000000;">Signature by Operator</div>
-                                <div style="border:1.5px solid #000000; border-radius:12px; height:62px; padding:8px 10px; display:flex; align-items:flex-end; justify-content:center; font-size:13px; font-weight:700; color:#000000;">Signature by Parle Officer</div>
-                                <div style="border:1.5px solid #000000; border-radius:12px; height:62px; padding:8px 10px; display:flex; align-items:flex-end; justify-content:center; font-size:13px; font-weight:700; color:#000000;">Signature by Production Manager</div>
+                                <div style="border:1.5px solid #000000; border-radius:12px; min-height:62px; padding:8px 10px; text-align:center; font-size:12px; color:#000000;"><strong>Document Filler</strong><br>${escapeHtml(document.getElementById('fillerName').value||'—')}<br><b>${escapeHtml(approvalState.filler?.status||'not submitted')}</b></div>
+                                <div style="border:1.5px solid #000000; border-radius:12px; min-height:62px; padding:8px 10px; text-align:center; font-size:12px; color:#000000;"><strong>Parle Executive</strong><br>${escapeHtml(document.getElementById('parleName').value||'—')}<br><b>${escapeHtml(approvalState.parle?.status||'pending')}</b></div>
+                                <div style="border:1.5px solid #000000; border-radius:12px; min-height:62px; padding:8px 10px; text-align:center; font-size:12px; color:#000000;"><strong>Production Manager</strong><br>${escapeHtml(document.getElementById('productionName').value||'—')}<br><b>${escapeHtml(approvalState.production?.status||'pending')}</b></div>
                             </div>
                             <div style="text-align:center; margin-top:6px; padding-top:8px; border-top:1px solid #000000; font-size:11px; color:#000000;">
                                 <strong>Line Weight Report Management System By Prateek Agarwal</strong>
