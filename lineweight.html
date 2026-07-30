@@ -491,79 +491,32 @@
             }
         }
 
-        /* Ambaji Foods unified selector theme */
-        body {
-            background: radial-gradient(circle at 50% -10%, #183a68 0, #0c1735 38%, #070d22 100%);
-            color: #eef7ff;
-        }
+        /* Navigation and Drive status additions in the original theme */
         .back-home {
             display: inline-flex;
             align-items: center;
             margin: 0 0 16px;
             padding: 10px 16px;
-            border: 1px solid #57cfff55;
+            border: 1px solid #000000;
             border-radius: 12px;
-            background: #45aaff16;
-            color: #dff7ff;
+            background: #ffffff;
+            color: #000000;
             font-weight: 800;
             text-decoration: none;
         }
-        .back-home:hover { background: #45aaff2b; }
+        .back-home:hover { background: #f2f2f2; }
         .drive-status {
             display: inline-flex;
             margin-left: 10px;
             padding: 9px 14px;
-            border: 1px solid #42e98a66;
+            border: 1px solid #168a45;
             border-radius: 999px;
-            background: #21bd651c;
-            color: #8fffc0;
+            background: #e8f8ee;
+            color: #126b37;
             font-size: 0.8rem;
             font-weight: 800;
         }
-        .brand-header, .sheet, .report-options {
-            background: linear-gradient(145deg, #101d3d, #0c1632);
-            border-color: #4abfff45;
-            color: #eef7ff;
-            box-shadow: 0 14px 38px #00051f70;
-        }
-        .brand-header h1,
-        .sheet h2,
-        .data-filled-section label,
-        .standard-field label,
-        .variety-row label,
-        .remarks-area label,
-        footer { color: #eef7ff !important; }
-        .data-filled-section, .standard-row, .stat-grid, .remarks-area {
-            background: #101d3d;
-            border-color: #4abfff45;
-        }
-        .data-filled-section input,
-        .standard-field input,
-        .variety-row input,
-        .variety-row select,
-        .remarks-area textarea,
-        .line-input,
-        .time-display {
-            background: #09142e;
-            border-color: #38537d;
-            color: #f3f8ff;
-        }
-        .auto-calc-field, .time-display, .line-number-cell, .check-status {
-            background: #14264a !important;
-            color: #dcecff !important;
-        }
-        .table-wrapper, .chart-container { border-color: #38537d; background: #fff; }
-        .data-table th { background: linear-gradient(135deg, #218fca, #405fd3); color: #fff; }
-        .data-table td { border-color: #38537d; color: #0b1630; }
-        .tab-btn, .btn-primary, .btn-whatsapp-text, .btn-whatsapp-image, .btn-excel {
-            background: linear-gradient(135deg, #48cdf5, #397eea 58%, #5a57d9);
-            border-color: #63dfff;
-            color: #fff;
-        }
-        .tab-btn.active { background: linear-gradient(135deg, #57e1ff, #4d78f0); color: #06142d; }
-        .btn-reset { background: #14264a; border-color: #45638d; color: #dcecff; }
-        .toast-msg { background: #10264a; color: #fff; border: 1px solid #54d8ff; }
-        @media print { .back-home { display: none !important; } }
+        @media print { .back-home, .drive-status { display: none !important; } }
     </style>
 </head>
 <body>
