@@ -1000,9 +1000,14 @@
             }
             function approvalLink(role, decision) {
                 const state = approvalState[role] || {};
-                return CLOUD_URL + '?action=approval&id=' + encodeURIComponent('lineweight-session-latest') +
-                    '&role=' + encodeURIComponent(role) + '&decision=' + encodeURIComponent(decision) +
-                    '&token=' + encodeURIComponent(state.token || '');
+                const payload = JSON.stringify({
+                    id:'lineweight-session-latest',
+                    role,
+                    decision,
+                    token:state.token || ''
+                });
+                const code = btoa(payload).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+                return CLOUD_URL + '?a=' + code;
             }
             function shareApprovalOnWhatsApp(role) {
                 const roleLabel = role === 'production' ? 'Production Manager' : 'Parle Executive';
