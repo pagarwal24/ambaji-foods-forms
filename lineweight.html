@@ -1019,7 +1019,7 @@
                     title:'Line Weight Control'
                 });
                 const code = btoa(payload).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-                return CLOUD_URL + '?a=' + encodeURIComponent(code);
+                return 'https://pagarwal24.github.io/ambaji-foods-forms/approval.html?a=' + code;
             }
             function shareApprovalOnWhatsApp(role) {
                 const mobileId = role === 'production' ? 'productionMobile' : 'parleMobile';
