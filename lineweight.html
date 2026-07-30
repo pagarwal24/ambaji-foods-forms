@@ -1212,8 +1212,24 @@
                     if (!record || !record.data) throw new Error('No Drive session');
                     applySessionData(record.data);
                     localStorage.setItem('ambajiQC_full', JSON.stringify(record.data));
-                    document.getElementById('driveStatus').textContent = 'Loaded from Google Drive';
-                    showToast('📀 Session loaded from Google Drive');
+                    const finalStatus = record.data.approvalStatus || overallApprovalStatus();
+                    if (finalStatus === 'approved' || finalStatus === 'rejected') {
+                        document.getElementById('driveStatus').textContent = 'Updating final approved report…';
+                        const finalReport = await generateA4ReportImage({downloadImage:false,shareImage:false,theme:'color'});
+                        if (!finalReport?.blob) throw new Error('Final report image could not be generated');
+                        await fetch(CLOUD_URL,{method:'POST',mode:'no-cors',body:new URLSearchParams({
+                            action:'upload',
+                            recordId:record.id,
+                            fileName:finalReport.fileName,
+                            mimeType:'image/png',
+                            base64:await blobToBase64(finalReport.blob)
+                        })});
+                        document.getElementById('driveStatus').textContent = 'Final approved image and PDF updated';
+                        showToast('✅ Final approved image and PDF updated');
+                    } else {
+                        document.getElementById('driveStatus').textContent = 'Loaded from Google Drive';
+                        showToast('📀 Session loaded from Google Drive');
+                    }
                 } catch (error) {
                     const local = localStorage.getItem('ambajiQC_full');
                     if (!local) showToast('No saved session found');
