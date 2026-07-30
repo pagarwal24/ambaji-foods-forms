@@ -1019,7 +1019,7 @@
                     title:'Line Weight Control'
                 });
                 const code = btoa(payload).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-                return 'https://pagarwal24.github.io/ambaji-foods-forms/approval.html?a=' + code;
+                return CLOUD_URL + '?a=' + encodeURIComponent(code);
             }
             function shareApprovalOnWhatsApp(role) {
                 const mobileId = role === 'production' ? 'productionMobile' : 'parleMobile';
@@ -1173,21 +1173,21 @@
                     const record = {id:'lineweight-session-latest',formId:'line-weight-control',docId:'AFIPL/PRD/FRM/20',data:session,createdAt:now,updatedAt:now};
                     await fetch(CLOUD_URL,{method:'POST',mode:'no-cors',body:new URLSearchParams({action:'upsert',record:JSON.stringify(record)})});
                     const reportImage = await generateA4ReportImage({downloadImage:false,shareImage:false,theme:'color'});
-                    if (reportImage?.blob) {
-                        await fetch(CLOUD_URL,{method:'POST',mode:'no-cors',body:new URLSearchParams({
-                            action:'upload',
-                            recordId:record.id,
-                            fileName:reportImage.fileName,
-                            mimeType:'image/png',
-                            base64:await blobToBase64(reportImage.blob)
-                        })});
-                    }
+                    if (!reportImage?.blob) throw new Error('Report image could not be generated. Enter at least one line reading and try again.');
+                    await fetch(CLOUD_URL,{method:'POST',mode:'no-cors',body:new URLSearchParams({
+                        action:'upload',
+                        recordId:record.id,
+                        fileName:reportImage.fileName,
+                        mimeType:'image/png',
+                        base64:await blobToBase64(reportImage.blob)
+                    })});
                     document.getElementById('driveStatus').textContent = 'Saved to Google Drive';
                     showApprovalShareButtons();
                     showToast('✅ Saved. Send the approval links on WhatsApp.');
                 } catch (error) {
-                    document.getElementById('driveStatus').textContent = 'Drive unavailable · browser backup saved';
-                    showToast('Browser backup saved; Drive could not be reached');
+                    const message = error?.message || 'Drive could not be reached';
+                    document.getElementById('driveStatus').textContent = 'Browser backup saved · ' + message;
+                    showToast('Browser backup saved · ' + message);
                 } finally {
                     button.disabled = false;
                     button.textContent = '💾 Save Session';
