@@ -109,8 +109,8 @@
           <button class="btn" type="button" onclick="window.print()">Print form</button>
           <button class="btn gold" type="button" id="imageBtn">Save as Image</button>
           <button class="btn whatsapp" type="button" id="whatsappBtn">Share on WhatsApp</button>
-          <button class="btn whatsapp" type="button" id="approvalOneBtn" style="display:none">Send Approval 1 · Production Manager to Ambaji Team</button>
-          <button class="btn whatsapp" type="button" id="approvalTwoBtn" style="display:none">Send Approval 2 · Prateek to Parle Team</button>
+          <button class="btn whatsapp" type="button" id="approvalOneBtn" style="display:none">Send Approval 1 · Production Manager</button>
+          <button class="btn whatsapp" type="button" id="approvalTwoBtn" style="display:none">Send Approval 2 · Parle Team</button>
         </div></form>
       </section>
       <section class="panel records-panel">
@@ -169,8 +169,8 @@ const CLOUD_URL="https://script.google.com/macros/s/AKfycbyi8DlI-5tHZUy8wOW35CJF
     }
     function showApprovalButtons(record){
       pendingApprovalRecord=record;
-      $("#approvalOneBtn").textContent="Send Approval 1 · Production Manager to Ambaji Team";
-      $("#approvalTwoBtn").textContent="Send Approval 2 · Prateek to Parle Team";
+      $("#approvalOneBtn").textContent="Send Approval 1 · Production Manager";
+      $("#approvalTwoBtn").textContent="Send Approval 2 · Parle Team";
       $("#approvalOneBtn").style.display="inline-flex";
       $("#approvalTwoBtn").style.display="inline-flex";
     }
