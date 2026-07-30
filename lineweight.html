@@ -1104,6 +1104,16 @@
                 document.getElementById('parleName').value = s.parleName||s.approvals?.parle?.name||'Prateek Agarwal';
                 document.getElementById('parleMobile').value = s.parleMobile||'9795500700';
                 approvalState = s.approvals || approvalState;
+                if (s.approvalStatus === 'approved') {
+                    approvalState.parle = {
+                        ...(approvalState.parle || {}),
+                        name:(approvalState.parle || {}).name || s.parleName || 'Prateek Agarwal',
+                        status:'approved',
+                        signedAt:(approvalState.parle || {}).signedAt || s.submittedAt || s.updatedAt || new Date().toISOString()
+                    };
+                } else if (s.approvalStatus === 'rejected' && approvalState.parle?.status !== 'rejected' && approvalState.production?.status !== 'rejected') {
+                    approvalState.parle = {...(approvalState.parle || {}),status:'rejected'};
+                }
                 updateApprovalDisplay();
                 showApprovalShareButtons();
                 document.getElementById('ovenFilledBy').value = s.ovenFilledBy||'';
