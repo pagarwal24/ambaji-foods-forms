@@ -204,6 +204,14 @@ function trashFileByUrl_(url) {
   try { DriveApp.getFileById(match[0]).setTrashed(true); } catch (error) {}
 }
 
+function authorizePdfStorage_() {
+  const document = DocumentApp.create("Ambaji Foods PDF Storage Authorization");
+  document.getBody().appendParagraph("Authorization check");
+  document.saveAndClose();
+  DriveApp.getFileById(document.getId()).setTrashed(true);
+  return "PDF storage authorized";
+}
+
 function notifyApprovalTeam_(record) {
   const data = record.data || {};
   const approvals = data.approvals || {};
@@ -355,7 +363,12 @@ function deleteRecord_(id) {
   if (lastRow < 2) return;
   const ids = sheet.getRange(2, 1, lastRow - 1, 1).getDisplayValues().flat();
   const index = ids.indexOf(id);
-  if (index >= 0) sheet.deleteRow(index + 2);
+  if (index >= 0) {
+    const row = index + 2;
+    trashFileByUrl_(sheet.getRange(row, 7).getValue());
+    trashFileByUrl_(sheet.getRange(row, 8).getValue());
+    sheet.deleteRow(row);
+  }
 }
 
 function uploadImage_(params) {
