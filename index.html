@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ambaji Foods | Quality & Operations Forms</title>
+  <style>
+    :root{--green:#174b3a;--green2:#21654e;--gold:#d6a84b;--cream:#f7f4ec;--ink:#17312a;--muted:#64746d;--line:#d7ded9;--danger:#a6382f;--white:#fff}
+    *{box-sizing:border-box} body{margin:0;background:var(--cream);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+    .selector-screen{min-height:100vh;background:radial-gradient(circle at 50% -10%,#183a68 0,#0c1735 38%,#070d22 100%);color:white;padding:56px 24px 70px;position:relative;overflow:hidden}
+    .selector-screen:before,.selector-screen:after{content:"";position:absolute;border-radius:50%;filter:blur(2px);pointer-events:none}.selector-screen:before{width:420px;height:420px;background:#2b8cff12;left:-180px;top:20%}.selector-screen:after{width:500px;height:500px;background:#37d9ff0c;right:-220px;bottom:-140px}
+    .selector-inner{width:min(1120px,100%);margin:auto;position:relative;z-index:1}.selector-brand{display:flex;align-items:center;justify-content:center;gap:13px;color:#b9d9ff;font-weight:800;letter-spacing:.12em;text-transform:uppercase;font-size:12px}
+    .selector-logo{width:44px;height:44px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(135deg,#52dcff,#4b6dff);color:#07132d;font-size:16px;font-weight:950;box-shadow:0 8px 30px #278cff45}
+    .selector-title{text-align:center;font-size:clamp(40px,7vw,76px);line-height:1.02;margin:24px 0 10px;font-weight:900;letter-spacing:-.045em;background:linear-gradient(100deg,#55e6ff,#5583ff 65%,#8b5cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .selector-subtitle{text-align:center;color:#a7b9d7;max-width:670px;margin:0 auto 38px;font-size:16px;line-height:1.6}.selector-label{text-align:center;color:#66dfff;text-transform:uppercase;letter-spacing:.16em;font-size:11px;font-weight:900;margin-bottom:17px}
+    .selector-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.selector-card{appearance:none;border:1px solid #69d9ff40;color:white;min-height:92px;border-radius:18px;padding:17px 18px;text-align:left;background:linear-gradient(135deg,#48cdf5 0%,#397eea 58%,#5a57d9 100%);box-shadow:0 12px 30px #00123855,inset 0 1px #ffffff50;transition:.2s ease;position:relative;overflow:hidden}
+    .selector-card:after{content:"→";position:absolute;right:18px;bottom:15px;font-size:20px;opacity:.72}.selector-card:hover{transform:translateY(-4px);filter:saturate(1.12) brightness(1.06);box-shadow:0 18px 40px #1277e94d,inset 0 1px #ffffff60}.selector-card strong{display:block;font-size:16px;padding-right:25px}.selector-card span{display:block;font-size:11px;color:#e2f5ff;margin-top:7px;letter-spacing:.02em}
+    .selector-footer{text-align:center;color:#6f84a9;font-size:11px;margin-top:28px}.selector-hidden{display:none!important}
+    button,input,select,textarea{font:inherit} button{cursor:pointer}
+    .topbar{position:sticky;top:0;z-index:20;background:var(--green);color:white;box-shadow:0 2px 14px #082b2030}
+    .topbar-inner{max-width:1500px;margin:auto;padding:14px 22px;display:flex;gap:18px;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:12px}.mark{width:45px;height:45px;border-radius:12px;background:var(--gold);color:var(--green);display:grid;place-items:center;font-weight:900;letter-spacing:-1px}
+    .top-actions{display:flex;align-items:center;gap:9px}.selector-back{border:1px solid #ffffff38;background:#ffffff12;color:#fff;padding:8px 11px;border-radius:9px;font-weight:750}
+    .selector-back:hover{background:#ffffff20}
+    .brand h1{font-size:17px;margin:0}.brand p{font-size:12px;margin:2px 0 0;color:#d8e7e1}
+    .status{font-size:12px;padding:7px 10px;border:1px solid #ffffff40;border-radius:999px}
+    .shell{max-width:1500px;margin:0 auto;padding:22px;display:grid;grid-template-columns:270px minmax(0,1fr);gap:20px}
+    .sidebar,.panel{background:white;border:1px solid var(--line);border-radius:16px;box-shadow:0 6px 24px #17312a0a}
+    .sidebar{padding:14px;align-self:start;position:sticky;top:92px;max-height:calc(100vh - 114px);overflow:auto}
+    .sidebar h2{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:8px 9px 12px}
+    .nav-btn{width:100%;border:0;background:transparent;text-align:left;padding:10px 11px;border-radius:10px;color:var(--ink);margin:2px 0;display:flex;justify-content:space-between;gap:8px}
+    .nav-btn:hover{background:#eef5f1}.nav-btn.active{background:var(--green);color:white}.badge{font-size:11px;opacity:.75}
+    main{min-width:0}.panel{padding:22px;margin-bottom:20px}
+    .panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:18px}.eyebrow{color:var(--green2);font-weight:800;text-transform:uppercase;font-size:11px;letter-spacing:.12em}
+    h2{margin:4px 0 4px;font-size:24px}.subtitle{margin:0;color:var(--muted);font-size:14px}.doc-id{white-space:nowrap;background:#f1f6f3;color:var(--green);border:1px solid #cbdcd4;border-radius:10px;padding:8px 10px;font-size:12px;font-weight:800}
+    .form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.field{display:flex;flex-direction:column;gap:6px}.field.wide{grid-column:span 2}.field.full{grid-column:1/-1}
+    label{font-size:12px;font-weight:750;color:#3d514a}input,select,textarea{width:100%;border:1px solid #cbd5d0;border-radius:9px;background:#fff;padding:10px 11px;color:var(--ink);outline:none}
+    input:focus,select:focus,textarea:focus{border-color:var(--green2);box-shadow:0 0 0 3px #21654e18}textarea{min-height:88px;resize:vertical}
+    .actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px}.btn{border:1px solid var(--line);border-radius:9px;background:#fff;padding:9px 13px;color:var(--ink);font-weight:750}
+    .btn:hover{background:#f1f6f3}.btn.primary{background:var(--green);border-color:var(--green);color:#fff}.btn.gold{background:var(--gold);border-color:var(--gold);color:var(--green)}.btn.whatsapp{background:#25d366;border-color:#25d366;color:#073b20}.btn.danger{color:var(--danger)}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.toolbar input{max-width:330px}.spacer{flex:1}
+    .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;margin-top:15px}table{width:100%;border-collapse:collapse;font-size:13px;min-width:780px}th{background:var(--green);color:#fff;text-align:left;padding:11px;position:sticky;top:0}td{padding:10px 11px;border-top:1px solid var(--line);vertical-align:top}tbody tr:nth-child(even){background:#fafbf9}.empty{text-align:center;color:var(--muted);padding:34px}
+    .mini{padding:5px 8px;font-size:12px;border-radius:7px}.record-actions{display:flex;gap:6px}.notice{background:#fff8e7;border:1px solid #ead39a;padding:11px 13px;border-radius:10px;color:#66511f;font-size:12px;margin-bottom:16px}
+    .toast{position:fixed;right:22px;bottom:22px;background:var(--ink);color:white;border-radius:10px;padding:11px 14px;opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s;z-index:40}.toast.show{opacity:1;transform:none}
+    /* Unified selector-inspired theme for the complete form workspace */
+    #appWorkspace{min-height:100vh;background:radial-gradient(circle at 50% -10%,#183a68 0,#0c1735 38%,#070d22 100%);color:#eef7ff}
+    #appWorkspace .topbar{background:#09132e;border-bottom:1px solid #4abfff35;box-shadow:0 8px 30px #00072a80}
+    #appWorkspace .mark{background:linear-gradient(135deg,#52dcff,#4b6dff);color:#07132d;box-shadow:0 8px 24px #278cff45}
+    #appWorkspace .brand p{color:#9eb9dc}
+    #appWorkspace .status,#appWorkspace .selector-back{border-color:#57cfff45;background:#45aaff12;color:#dff7ff}
+    #appWorkspace .selector-back:hover{background:#45aaff25}
+    #appWorkspace .sidebar,#appWorkspace .panel{background:linear-gradient(145deg,#101d3d,#0c1632);border-color:#4abfff30;box-shadow:0 14px 38px #00051f70}
+    #appWorkspace .sidebar h2,#appWorkspace .subtitle,#appWorkspace .recordCount{color:#91a8ca}
+    #appWorkspace .nav-btn{color:#dcecff}
+    #appWorkspace .nav-btn:hover{background:#45aaff18}
+    #appWorkspace .nav-btn.active{background:linear-gradient(135deg,#48cdf5,#397eea 58%,#5a57d9);color:white;box-shadow:0 8px 22px #157fd640}
+    #appWorkspace .eyebrow{color:#58dfff}
+    #appWorkspace h2{color:#f2f8ff}
+    #appWorkspace .doc-id{background:#45aaff14;color:#73e4ff;border-color:#52cfff42}
+    #appWorkspace .notice{background:#18294b;border-color:#4abfff35;color:#bcd3ef}
+    #appWorkspace label{color:#bcd2eb}
+    #appWorkspace input,#appWorkspace select,#appWorkspace textarea{background:#09142e;border-color:#38537d;color:#f3f8ff}
+    #appWorkspace input::placeholder{color:#738baa}
+    #appWorkspace input:focus,#appWorkspace select:focus,#appWorkspace textarea:focus{border-color:#51d4ff;box-shadow:0 0 0 3px #3bc7ff1d,0 0 20px #217ee526}
+    #appWorkspace select option{background:#0b1630;color:#fff}
+    #appWorkspace .btn{background:#14264a;border-color:#45638d;color:#dcecff}
+    #appWorkspace .btn:hover{background:#1a3562;border-color:#57cfff}
+    #appWorkspace .btn.primary{background:linear-gradient(135deg,#48cdf5,#397eea 58%,#5a57d9);border-color:#63dfff;color:#fff;box-shadow:0 9px 24px #157fd640}
+    #appWorkspace .btn.gold{background:linear-gradient(135deg,#57e1ff,#4d78f0);border-color:#69e5ff;color:#06142d}
+    #appWorkspace .btn.whatsapp{background:linear-gradient(135deg,#42e98a,#21bd65);border-color:#5cf09a;color:#042a17}
+    #appWorkspace .table-wrap{border-color:#38537d}
+    #appWorkspace table{color:#dcecff}
+    #appWorkspace th{background:linear-gradient(135deg,#218fca,#405fd3);color:#fff}
+    #appWorkspace td{border-color:#263b60}
+    #appWorkspace tbody tr:nth-child(even){background:#122141}
+    #appWorkspace tbody tr:nth-child(odd){background:#0d1935}
+    #appWorkspace .empty{color:#8199bb}
+    #appWorkspace .toast{background:#10264a;border:1px solid #54d8ff}
+    @media(max-width:920px){.selector-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.shell{grid-template-columns:1fr}.sidebar{position:static;max-height:none}.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:620px){.selector-screen{padding:38px 15px 50px}.selector-grid{grid-template-columns:1fr}.selector-card{min-height:80px}.topbar-inner,.shell{padding-left:14px;padding-right:14px}.status{display:none}.form-grid{grid-template-columns:1fr}.field.wide{grid-column:auto}.panel{padding:17px}.panel-head{display:block}.doc-id{display:inline-block;margin-top:10px}.toolbar input{max-width:none}.toolbar>*{flex:1}}
+    @media print{.topbar,.sidebar,.actions,.records-panel,.notice{display:none!important}.shell{display:block;padding:0}.panel{border:0;box-shadow:none}.form-grid{grid-template-columns:repeat(3,1fr)}input,select,textarea{border:0;border-bottom:1px solid #777;border-radius:0;padding-left:0}.doc-id{border:0}}
+  </style>
+</head>
+<body>
+  <section class="selector-screen" id="selectorScreen">
+    <div class="selector-inner">
+      <div class="selector-brand"><div class="selector-logo">AF</div><span>Ambaji Foods Pvt. Ltd.</span></div>
+      <h1 class="selector-title">Quality Forms Selector</h1>
+      <p class="selector-subtitle">Choose an operational or laboratory record to begin. Every entry stays organized by form and can be searched, printed, or exported.</p>
+      <div class="selector-label">Select a form</div>
+      <div class="selector-grid" id="selectorGrid"></div>
+      <div class="selector-footer">AFPL Quality & Operations Record System · Data is saved locally in this browser<br><strong>Apps By Prateek Agarwal</strong></div>
+    </div>
+  </section>
+  <div id="appWorkspace" class="selector-hidden">
+  <header class="topbar"><div class="topbar-inner">
+    <div class="brand"><div class="mark">AF</div><div><h1>Ambaji Foods Pvt. Ltd.</h1><p>Quality & Operations Record System</p></div></div>
+    <div class="top-actions"><button class="selector-back" id="backToSelector">← Form selector</button><div class="status" id="saveStatus">Browser storage ready</div></div>
+  </div></header>
+  <div class="shell">
+    <aside class="sidebar"><h2>Forms</h2><nav id="nav"></nav></aside>
+    <main>
+      <section class="panel">
+        <div class="panel-head"><div><div class="eyebrow">Data entry</div><h2 id="formTitle"></h2><p class="subtitle" id="formDescription"></p></div><div class="doc-id" id="docId"></div></div>
+        <div class="notice">Records are saved in this browser on this device. CSV export is available for Excel and record transfer.</div>
+        <form id="entryForm"><div class="form-grid" id="fields"></div><div class="actions">
+          <button class="btn primary" type="submit" id="saveBtn">Save record</button>
+          <button class="btn" type="button" id="newBtn">Clear form</button>
+          <button class="btn" type="button" onclick="window.print()">Print form</button>
+          <button class="btn gold" type="button" id="imageBtn">Save as Image</button>
+          <button class="btn whatsapp" type="button" id="whatsappBtn">Share on WhatsApp</button>
+        </div></form>
+      </section>
+      <section class="panel records-panel">
+        <div class="panel-head"><div><div class="eyebrow">Saved data</div><h2>Records</h2><p class="subtitle" id="recordCount"></p></div></div>
+        <div class="toolbar"><input id="search" type="search" placeholder="Search current form records"><span class="spacer"></span>
+          <button class="btn" id="csvBtn">Export CSV</button>
+        </div>
+        <div class="table-wrap"><table><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div>
+      </section>
+    </main>
+    <footer class="selector-footer" style="padding:0 20px 24px"><strong>Apps By Prateek Agarwal</strong></footer>
+  </div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script>
+    const F=(key,label,type="text",wide="")=>({key,label,type,wide});
+    const common=[F("date","Date","date"),F("shift","Shift","select"),F("enteredBy","Entered by")];
+    const forms=[
+      {id:"daily-unloading",title:"Daily Unloading",doc:"AFPL/DU/FRM/01",desc:"Incoming material unloading and laboratory clearance.",fields:[F("date","Date","date"),F("supplier","Supplier name"),F("commodity","Commodity"),F("quantity","Quantity"),F("brand","Brand"),F("challan","Challan no."),F("grn","GRN no."),F("finding","Laboratory finding","textarea","wide"),F("chemist","Chemist"),F("pe","Authorized executive")]},
+      {id:"wrapper-testing",title:"Wrapper / Laddi Pack Testing",doc:"AFPL/RWLPTR/FRM/01",desc:"GSM observations and count per kilogram.",fields:[F("date","Date","date"),F("code","Code"),F("variety","Variety & pack size"),...[1,2,3,4,5,6,7,8,9,10].map(n=>F("gsm"+n,"GSM "+n,"number")),F("average","Average GSM","number"),F("count","Count / kg","number"),F("chemist","Chemist"),F("pe","Authorized executive")]},
+      {id:"packing-material",title:"Packing Material Testing",doc:"AFPL/PMT/FRM/01",desc:"Incoming packing-material inspection.",fields:[F("date","Date","date"),F("material","Material"),F("supplier","Supplier name"),F("variety","Variety & pack size"),F("quantity","Quantity"),F("challan","Challan no."),F("grn","GRN no."),F("finding","Laboratory finding","textarea","wide"),F("chemist","Chemist"),F("pe","Authorized executive")]},
+      {id:"corrugated-box",title:"Corrugated Box Testing",doc:"AFPL/CBT/FRM/01",desc:"Dimensions, strength, board and print inspection.",fields:[F("date","Date","date"),F("supplier","Supplier name"),F("quantity","Quantity"),F("bill","Bill no."),F("variety","Variety"),F("packSize","Pack size"),F("packCode","Pack code"),F("grn","GRN"),F("vehicle","Vehicle no."),F("dimensions","Internal dimensions (L×W×H) mm"),F("ply","No. of ply","number"),F("boardType","Type of board"),F("stp","STP"),F("weight","Weight (g)","number"),F("cs","C.S. (KgF)","number"),F("bs","B.S. (Kg/cm²)","number"),F("moisture","Moisture %","number"),F("flutes","Flutes per 300 mm","number"),F("fluteHeight","Flute height (mm)","number"),F("gsm","Board GSM"),F("printColour","Printing colour"),F("remarks","Remarks","textarea","full")]},
+      {id:"balance-calibration",title:"Balance / Load Cell Calibration",doc:"AFPL/BLCCDS/FRM/01",desc:"Daily calibration observation and error record.",fields:[F("date","Date","date"),F("location","Location"),F("month","Month / year","month"),F("balanceNo","Balance no."),F("capacity","Maximum capacity"),F("minimum","Minimum capacity"),F("weightUsed","Weight used","number"),F("observation","Observation","number"),F("error","Error","number"),F("remark","Remark","textarea","wide"),F("checkedBy","Checked by"),F("verifiedBy","Verified by")]},
+      {id:"bsr-finding",title:"BSR Finding",doc:"AFPL/BSRF/FRM/01",desc:"Finished-product and pack evaluation.",fields:[F("evaluationDate","Evaluation date","date"),F("product","Product"),F("packSize","Pack size"),F("boxes","No. of boxes","number"),F("batchCode","Batch code"),F("displayWeight","Weight displayed on box"),F("boxStamping","Box stamping","select"),F("boxTaping","Box taping","select"),F("partitions","Partitions","select"),F("polybagSealing","Polybag sealing","select"),F("polybagCount","Polybag count","number"),F("packetCount","Packet count","number"),F("packetSealing","Packet sealing","select"),F("appearance","Packet appearance","select"),F("remarks","Remarks","textarea","full")]},
+      {id:"process-testing",title:"Process Testing",doc:"AFPL/PT/FRM/01",desc:"Water, oil, ingredients, dough and biscuit testing.",fields:[...common,F("variety","Variety"),F("material","Material","select"),F("parameter","Parameter"),F("standard","Standard"),F("observation","Observation","textarea","wide"),F("remark","Remark","textarea","wide"),F("verifiedBy","Verified by")]},
+      {id:"chemical-preparation",title:"Chemical Preparation & Standardization",doc:"AFPL/CPSR/FRM/01",desc:"Preparation, re-standardization and disposal control.",fields:[F("serial","Serial no.","number"),F("chemical","Chemical name"),F("preparationDate","Preparation date","date"),F("volume","Volume"),F("normality","Standardized normality","number"),F("reNormality","Re-standardized normality","number"),F("reDate","Re-standardized date","date"),F("disposalDate","Disposal date","date"),F("signature","Responsible person")]},
+      {id:"tank-cleaning",title:"Tank Cleaning Checklist",doc:"AFPL/CCLSST/FRM/01",desc:"Silo and storage-tank cleaning schedule.",fields:[F("serial","Serial no.","number"),F("tank","Tank name"),F("frequency","Frequency","select"),F("capacity","Capacity"),F("responsibility","Responsibility"),F("cleaningDate","Cleaning date","date"),F("dueDate","Due date","date"),F("doneBy","Done by"),F("verifiedBy","Verified by"),F("remarks","Remarks","textarea","wide")]},
+      {id:"bsr-corrective",title:"BSR Corrective Action",doc:"AFPL/BSRFCA/FRM/01",desc:"Problem, corrective action, ownership and verification.",fields:[F("serial","Serial no.","number"),F("date","Evaluation date","date"),F("code","Code"),F("variety","Variety & pack size"),F("problem","Problem","textarea","wide"),F("action","Corrective action","textarea","wide"),F("responsibility","Responsibility"),F("signature","Signature"),F("verifiedBy","Verified by")]},
+      {id:"log-book",title:"Log Book",doc:"AFPL/LOG/FRM/01",desc:"General remarks, handover and acceptance.",fields:[F("date","Date","date"),F("remarks","Remarks","textarea","full"),F("remarker","Remarker"),F("acceptor","Acceptor")]},
+      {id:"carbon-particles",title:"Sugar Carbon Particles Record",doc:"AFPL/SCPR/FRM/01",desc:"Grinding and syrup carbon-particle monitoring.",fields:[F("date","Date","date"),F("supplier","Supplier name"),F("grindingKg","Grinding bags (kg)","number"),F("syrupKg","Syrup bags (kg)","number"),F("grindingGm","Grinding particles (g)","number"),F("syrupGm","Syrup particles (g)","number"),F("remarks","Remarks","textarea","wide"),F("checkedBy","Checked by")]},
+      {id:"ph-calibration",title:"pH Meter Calibration",doc:"AFPL/pHC/FRM/01",desc:"Standard buffer observation and deviation record.",fields:[F("date","Date","date"),F("standard","Standard used","select"),F("observation","Observation","number"),F("deviation","Deviation","number"),F("action","Corrective action","textarea","wide"),F("checkedBy","Checked by"),F("verifiedBy","Verified by")]},
+      {id:"moisture-analysis",title:"Biscuit Moisture Analysis",doc:"AFPL/BMA/FRM/01",desc:"Plant-wise moisture monitoring by shift and variety.",fields:[F("plant","Plant","select"),F("date","Date","date"),F("shift","Shift","select"),F("variety","Variety"),F("time","Time","time"),F("moisture","Moisture %","number"),F("checkedBy","Checked by"),F("verifiedBy","Verified by")]},
+      {id:"dispatch-approval",title:"Dispatch Approval Slip",doc:"AFPL/DAS/FRM/01",desc:"Evaluation and release status for finished goods.",fields:[F("serial","Serial no.","number"),F("evaluationDate","Evaluation date","date"),F("product","Product"),F("packSize","Pack size"),F("productionDate","Production date","date"),F("packingA","Packing code A"),F("packingB","Packing code B"),F("packingC","Packing code C"),F("packingD","Packing code D"),F("status","Status","select"),F("remarks","Remarks","textarea","wide"),F("labIncharge","Lab in-charge"),F("shiftIncharge","Shift in-charge"),F("productionManager","Production manager"),F("authorizedExecutive","Authorized executive")]}
+    ];
+    const selectOptions={shift:["","A","B","C","General"],boxStamping:["","Pass","Hold","Reject"],boxTaping:["","Pass","Hold","Reject"],partitions:["","Pass","Hold","Reject"],polybagSealing:["","Pass","Hold","Reject"],packetSealing:["","Pass","Hold","Reject"],appearance:["","Pass","Hold","Reject"],material:["","Water","RBD","Maida","Invert Syrup","Ground Sugar","Dough","Biscuit","Recycle Biscuit"],frequency:["","Daily","Weekly","Fortnightly","Monthly","Quarterly"],standard:["","4.0 pH","7.0 pH","9.2 pH"],plant:["","Plant 1","Plant 2"],status:["","Passed","Hold","Rejected"]};
+    const CLOUD_URL="PASTE_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
+    let recordsCache=[],current=forms[0],editing=null; const $=s=>document.querySelector(s);
+    const load=()=>recordsCache;
+    function cloudReady(){return CLOUD_URL.startsWith("https://script.google.com/")}
+    function loadRemote(){
+      if(!cloudReady()){$("#saveStatus").textContent="Google storage setup required";return Promise.resolve([])}
+      return new Promise((resolve,reject)=>{const callback="ambajiCloud_"+Date.now();const script=document.createElement("script");const timer=setTimeout(()=>{cleanup();reject(Error("Cloud request timed out"))},15000);function cleanup(){clearTimeout(timer);delete window[callback];script.remove()}window[callback]=data=>{cleanup();resolve(Array.isArray(data)?data:[])};script.onerror=()=>{cleanup();reject(Error("Unable to reach Google storage"))};script.src=CLOUD_URL+"?action=list&callback="+callback;document.head.appendChild(script)})
+    }
+    async function postCloud(params){if(!cloudReady())throw Error("Google Apps Script URL has not been configured");await fetch(CLOUD_URL,{method:"POST",mode:"no-cors",body:new URLSearchParams(params)})}
+    async function refreshCloud(){try{recordsCache=await loadRemote();$("#saveStatus").textContent="Google Drive connected";renderRecords();initNav();initSelector()}catch(e){$("#saveStatus").textContent="Google storage unavailable";toast(e.message)}}
+    function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800)}
+    function initSelector(){ $("#selectorGrid").innerHTML=forms.map(f=>`<button class="selector-card" data-select="${f.id}"><strong>${f.title}</strong><span>${f.doc}</span></button>`).join("");document.querySelectorAll("[data-select]").forEach(b=>b.onclick=()=>openWorkspace(b.dataset.select));}
+    function openWorkspace(id){$("#selectorScreen").classList.add("selector-hidden");$("#appWorkspace").classList.remove("selector-hidden");selectForm(id);window.scrollTo({top:0,behavior:"instant"});}
+    function showSelector(){editing=null;$("#appWorkspace").classList.add("selector-hidden");$("#selectorScreen").classList.remove("selector-hidden");initSelector();window.scrollTo({top:0,behavior:"instant"});}
+    function initNav(){ $("#nav").innerHTML=forms.map(f=>`<button class="nav-btn" data-id="${f.id}"><span>${f.title}</span><span class="badge">${load().filter(r=>r.formId===f.id).length}</span></button>`).join("");document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>selectForm(b.dataset.id));}
+    function selectForm(id){current=forms.find(f=>f.id===id);editing=null;$("#formTitle").textContent=current.title;$("#formDescription").textContent=current.desc;$("#docId").textContent=current.doc;renderFields();renderRecords();initNav();document.querySelector(`[data-id="${id}"]`)?.classList.add("active");}
+    function renderFields(data={}){$("#fields").innerHTML=current.fields.map(f=>{const cls=f.wide==="full"?"full":f.wide?"wide":"";const val=data[f.key]??"";let control;if(f.type==="textarea")control=`<textarea name="${f.key}">${esc(val)}</textarea>`;else if(f.type==="select"){const opts=selectOptions[f.key]||["","Yes","No","N/A"];control=`<select name="${f.key}">${opts.map(o=>`<option ${o===val?"selected":""}>${esc(o)}</option>`).join("")}</select>`}else control=`<input name="${f.key}" type="${f.type}" value="${esc(val)}" ${f.type==="number"?'step="any"':""}>`;return `<div class="field ${cls}"><label>${f.label}</label>${control}</div>`}).join("");$("#saveBtn").textContent=editing?"Update record":"Save record";}
+    function esc(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+    $("#entryForm").onsubmit=async e=>{e.preventDefault();if(!cloudReady()){alert("Add the deployed Google Apps Script URL to CLOUD_URL before using online storage.");return}const button=$("#saveBtn"),data=Object.fromEntries(new FormData(e.target)),now=new Date().toISOString();let record;if(editing){const old=load().find(r=>r.id===editing);record={...old,data,updatedAt:now}}else record={id:crypto.randomUUID?crypto.randomUUID():Date.now().toString(36),formId:current.id,docId:current.doc,data,createdAt:now,updatedAt:now};button.disabled=true;button.textContent="Saving to Google Drive…";try{await postCloud({action:"upsert",record:JSON.stringify(record)});const blob=await createRecordImage();await uploadRecordImage(blob,record);const i=recordsCache.findIndex(r=>r.id===record.id);if(i>=0)recordsCache[i]=record;else recordsCache.push(record);$("#saveStatus").textContent="Saved to Google Drive · "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});toast(editing?"Record updated":"Record saved");editing=null;e.target.reset();renderFields();renderRecords();initNav()}catch(err){alert("The record could not be saved. "+err.message)}finally{button.disabled=false;button.textContent=editing?"Update record":"Save record"}};
+    $("#newBtn").onclick=()=>{editing=null;$("#entryForm").reset();renderFields()};
+    function currentFormData(){return Object.fromEntries(new FormData($("#entryForm")))}
+    function wrapCanvasText(ctx,text,maxWidth){const words=String(text||"—").split(/\s+/),lines=[];let line="";for(const word of words){const test=line?line+" "+word:word;if(ctx.measureText(test).width>maxWidth&&line){lines.push(line);line=word}else line=test}if(line)lines.push(line);return lines}
+    async function createRecordImage(){
+      const data=currentFormData(),filled=current.fields.filter(f=>String(data[f.key]||"").trim());
+      const width=1200,pad=70,rowGap=18,labelW=330,valueW=width-pad*2-labelW-36;
+      const measure=document.createElement("canvas").getContext("2d");measure.font="28px system-ui";
+      let contentHeight=0;for(const f of filled){const lines=wrapCanvasText(measure,data[f.key],valueW);contentHeight+=Math.max(54,lines.length*34)+rowGap}
+      const height=Math.max(720,300+contentHeight+120),canvas=document.createElement("canvas");canvas.width=width;canvas.height=height;const ctx=canvas.getContext("2d");
+      ctx.fillStyle="#f7f4ec";ctx.fillRect(0,0,width,height);ctx.fillStyle="#174b3a";ctx.fillRect(0,0,width,210);ctx.fillStyle="#d6a84b";ctx.fillRect(pad,48,92,92);
+      ctx.fillStyle="#174b3a";ctx.font="900 34px system-ui";ctx.textAlign="center";ctx.fillText("AF",pad+46,106);ctx.textAlign="left";ctx.fillStyle="#fff";ctx.font="800 34px system-ui";ctx.fillText("AMBAJI FOODS PVT. LTD.",pad+120,85);
+      ctx.fillStyle="#d8e7e1";ctx.font="22px system-ui";ctx.fillText("Quality & Operations Record",pad+120,125);ctx.fillStyle="#fff";ctx.font="800 30px system-ui";ctx.fillText(current.title,pad,180);
+      ctx.fillStyle="#e7efe9";ctx.font="700 20px system-ui";ctx.textAlign="right";ctx.fillText(current.doc,width-pad,180);ctx.textAlign="left";
+      let y=250;ctx.font="700 24px system-ui";for(const f of filled){const lines=wrapCanvasText(ctx,data[f.key],valueW),rowH=Math.max(54,lines.length*34);ctx.fillStyle="#e7efe9";ctx.fillRect(pad,y,labelW,rowH);ctx.fillStyle="#fff";ctx.fillRect(pad+labelW,y,width-pad*2-labelW,rowH);ctx.strokeStyle="#cbd5d0";ctx.strokeRect(pad,y,width-pad*2,rowH);ctx.fillStyle="#174b3a";ctx.font="700 22px system-ui";ctx.fillText(f.label,pad+18,y+35);ctx.fillStyle="#17312a";ctx.font="24px system-ui";lines.forEach((line,i)=>ctx.fillText(line,pad+labelW+18,y+35+i*34));y+=rowH+rowGap}
+      ctx.fillStyle="#64746d";ctx.font="18px system-ui";ctx.fillText("Generated "+new Date().toLocaleString(),pad,height-48);ctx.textAlign="right";ctx.font="700 18px system-ui";ctx.fillText("Apps By Prateek Agarwal",width-pad,height-48);ctx.textAlign="left";
+      return await new Promise(resolve=>canvas.toBlob(resolve,"image/png",1));
+    }
+    function imageFileName(){return "Ambaji_Foods_"+current.title.replace(/[^a-z0-9]+/gi,"_")+"_"+new Date().toISOString().slice(0,10)+".png"}
+    function blobToBase64(blob){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(",")[1]);reader.onerror=reject;reader.readAsDataURL(blob)})}
+    async function uploadRecordImage(blob,record){await postCloud({action:"upload",recordId:record.id,fileName:imageFileName(),mimeType:"image/png",base64:await blobToBase64(blob)})}
+    function downloadBlob(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),800)}
+    $("#imageBtn").onclick=async()=>{const blob=await createRecordImage();downloadBlob(blob,imageFileName());toast("Image file created")};
+    $("#whatsappBtn").onclick=async()=>{
+      const blob=await createRecordImage(),file=new File([blob],imageFileName(),{type:"image/png"}),text=`Ambaji Foods — ${current.title}\nDocument: ${current.doc}`;
+      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({title:current.title,text,files:[file]});toast("Share sheet opened");return}catch(e){if(e.name==="AbortError")return}}
+      downloadBlob(blob,file.name);window.open("https://wa.me/?text="+encodeURIComponent(text+"\\nThe record image has been downloaded—attach it in WhatsApp."),"_blank","noopener");toast("Image downloaded; WhatsApp opened");
+    };
+    function renderRecords(){const q=$("#search").value.toLowerCase();const rows=load().filter(r=>r.formId===current.id&&JSON.stringify(r.data).toLowerCase().includes(q));const cols=current.fields.slice(0,5);$("#recordCount").textContent=`${rows.length} record${rows.length===1?"":"s"} for ${current.title}`;$("#tableHead").innerHTML=`<tr>${cols.map(c=>`<th>${c.label}</th>`).join("")}<th>Saved</th><th>Actions</th></tr>`;$("#tableBody").innerHTML=rows.length?rows.slice().reverse().map(r=>`<tr>${cols.map(c=>`<td>${esc(r.data[c.key]||"—")}</td>`).join("")}<td>${new Date(r.updatedAt||r.createdAt).toLocaleString()}</td><td><div class="record-actions"><button class="btn mini" onclick="editRecord('${r.id}')">Edit</button><button class="btn mini danger" onclick="deleteRecord('${r.id}')">Delete</button></div></td></tr>`).join(""):`<tr><td class="empty" colspan="${cols.length+2}">No records saved for this form.</td></tr>`}
+    window.editRecord=id=>{const r=load().find(x=>x.id===id);if(!r)return;editing=id;renderFields(r.data);window.scrollTo({top:0,behavior:"smooth"})};
+    window.deleteRecord=async id=>{if(!confirm("Delete this record from Google storage?"))return;try{await postCloud({action:"delete",id});recordsCache=recordsCache.filter(r=>r.id!==id);renderRecords();initNav();toast("Record deleted")}catch(e){alert("The record could not be deleted. "+e.message)}};
+    $("#search").oninput=renderRecords;
+    function download(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+    $("#csvBtn").onclick=()=>{const rs=load().filter(r=>r.formId===current.id),cols=current.fields;const quote=v=>`"${String(v??"").replaceAll('"','""')}"`;const csv=[["Document ID",...cols.map(c=>c.label),"Saved at"].map(quote).join(","),...rs.map(r=>[r.docId,...cols.map(c=>r.data[c.key]),r.updatedAt||r.createdAt].map(quote).join(","))].join("\r\n");download(current.title.replaceAll(" ","_")+".csv",csv,"text/csv;charset=utf-8")};
+    $("#backToSelector").onclick=showSelector;
+    initSelector();
+    selectForm(forms[0].id);
+    refreshCloud();
+  </script>
+</body>
+</html>
