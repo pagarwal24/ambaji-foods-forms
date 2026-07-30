@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <title>Ambaji Foods | Digital Approval</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;padding:22px;background:#f2f2f2;color:#000;font-family:Arial,sans-serif}
+    main{width:min(580px,100%);background:#fff;border:2px solid #000;border-radius:24px;padding:32px;text-align:center;box-shadow:0 12px 30px rgba(0,0,0,.12)}
+    .mark{width:72px;height:72px;margin:0 auto 18px;display:grid;place-items:center;border-radius:50%;background:#000;color:#fff;font-size:38px;font-weight:900}
+    h1{margin:0 0 10px;font-size:clamp(25px,6vw,36px)}
+    p{line-height:1.55}
+    .details{margin:22px 0;padding:16px;border:1px solid #000;border-radius:16px;text-align:left;background:#fafafa}
+    .details div{margin:7px 0}
+    .status{font-size:18px;font-weight:800}
+    .foot{margin-top:24px;font-size:12px;color:#555}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="mark" id="mark">…</div>
+    <h1 id="title">Recording your decision</h1>
+    <p class="status" id="status">Please wait for confirmation.</p>
+    <div class="details" id="details"></div>
+    <p>Your response is being saved securely with the report’s date and time.</p>
+    <div class="foot">Ambaji Foods (India) Private Limited, Kanpur<br>AFIPL/PRD/FRM/20<br><b>Apps By Prateek Agarwal</b></div>
+  </main>
+  <script>
+    const CLOUD_URL='https://script.google.com/macros/s/AKfycbyi8DlI-5tHZUy8wOW35CJFpH65bsDU6Vx-H_ceNsGl5RzjvXAprYmWHXbB4G31PDw0/exec';
+    const code=new URLSearchParams(location.search).get('a')||'';
+    function decode(value){
+      const padded=value.replace(/-/g,'+').replace(/_/g,'/')+'==='.slice((value.length+3)%4);
+      return JSON.parse(atob(padded));
+    }
+    async function record(){
+      try{
+        const approval=decode(code);
+        const role=approval.role==='production'?'Production Manager':approval.role==='parle'?'Parle Executive':'Unknown role';
+        const decision=approval.decision==='approved'?'Approved':approval.decision==='rejected'?'Rejected':'Invalid';
+        if(role==='Unknown role'||decision==='Invalid'||!approval.token) throw new Error('Invalid link');
+        document.getElementById('details').innerHTML=`<div><b>Document:</b> AFIPL/PRD/FRM/20</div><div><b>Role:</b> ${role}</div><div><b>Decision:</b> ${decision}</div>`;
+        await fetch(CLOUD_URL,{method:'POST',mode:'no-cors',body:new URLSearchParams({action:'approvalCode',code})});
+        document.getElementById('mark').textContent='✓';
+        document.getElementById('mark').style.background=approval.decision==='approved'?'#168a45':'#a1261d';
+        document.getElementById('title').textContent=`Report ${decision.toLowerCase()}`;
+        document.getElementById('status').textContent='Your response has been recorded.';
+      }catch(error){
+        document.getElementById('mark').textContent='!';
+        document.getElementById('mark').style.background='#a1261d';
+        document.getElementById('title').textContent='Approval link invalid';
+        document.getElementById('status').textContent='Please request a new approval message from the document filler.';
+        document.getElementById('details').style.display='none';
+      }
+    }
+    record();
+  </script>
+</body>
+</html>
