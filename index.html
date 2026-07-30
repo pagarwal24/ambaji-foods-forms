@@ -155,7 +155,12 @@ const CLOUD_URL="https://script.google.com/macros/s/AKfycbyi8DlI-5tHZUy8wOW35CJF
     async function postCloud(params){if(!cloudReady())throw Error("Google Apps Script URL has not been configured");await fetch(CLOUD_URL,{method:"POST",mode:"no-cors",body:new URLSearchParams(params)})}
     async function refreshCloud(){try{recordsCache=await loadRemote();$("#saveStatus").textContent="Google Drive connected";renderRecords();initNav();initSelector()}catch(e){$("#saveStatus").textContent="Google storage unavailable";toast(e.message)}}
     function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800)}
-    function initSelector(){ $("#selectorGrid").innerHTML=forms.map(f=>`<button class="selector-card" data-select="${f.id}"><strong>${f.title}</strong><span>${f.doc}</span></button>`).join("");document.querySelectorAll("[data-select]").forEach(b=>b.onclick=()=>openWorkspace(b.dataset.select));}
+    function initSelector(){
+      $("#selectorGrid").innerHTML=forms.map(f=>`<button class="selector-card" data-select="${f.id}"><strong>${f.title}</strong><span>${f.doc}</span></button>`).join("")+
+        `<button class="selector-card" id="lineWeightTool"><strong>Line Weight Control</strong><span>AFIPL/PRD/FRM/20 · Oven & Stacker</span></button>`;
+      document.querySelectorAll("[data-select]").forEach(b=>b.onclick=()=>openWorkspace(b.dataset.select));
+      $("#lineWeightTool").onclick=()=>window.location.href="lineweight.html";
+    }
     function openWorkspace(id){$("#selectorScreen").classList.add("selector-hidden");$("#appWorkspace").classList.remove("selector-hidden");selectForm(id);window.scrollTo({top:0,behavior:"instant"});}
     function showSelector(){editing=null;$("#appWorkspace").classList.add("selector-hidden");$("#selectorScreen").classList.remove("selector-hidden");initSelector();window.scrollTo({top:0,behavior:"instant"});}
     function initNav(){ $("#nav").innerHTML=forms.map(f=>`<button class="nav-btn" data-id="${f.id}"><span>${f.title}</span><span class="badge">${load().filter(r=>r.formId===f.id).length}</span></button>`).join("");document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>selectForm(b.dataset.id));}

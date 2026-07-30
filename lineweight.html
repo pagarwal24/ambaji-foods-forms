@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Biscuit Line Weight Control | Ambaji Foods (India) Private Limited, Kanpur</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-gradient-start: #ffffff;
+            --bg-gradient-end: #f7f7f7;
+            --primary-lavender: #000000;
+            --primary-dark: #000000;
+            --accent-lavender: #000000;
+            --text-purple: #000000;
+            --text-soft: #444444;
+            --border-light: #000000;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            background: #ffffff;
+            font-family: 'Segoe UI', 'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            padding: 16px;
+            min-height: 100vh;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 20px 16px;
+            background: #ffffff;
+            border-radius: 32px;
+            color: #000000;
+            box-shadow: none;
+        }
+        .brand-header h1 {
+            font-size: clamp(1.5rem, 7vw, 2.2rem);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .tab-btn {
+            background: #ffffff;
+            border: 1px solid #000000;
+            padding: 12px 24px;
+            font-size: clamp(0.85rem, 4vw, 1rem);
+            font-weight: 700;
+            border-radius: 60px;
+            cursor: pointer;
+            color: #000000;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tab-btn.active {
+            background: #000000;
+            color: #ffffff;
+            box-shadow: none;
+        }
+
+        .sheet {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 32px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 2px solid #000000;
+        }
+        .sheet.active-sheet {
+            display: block;
+        }
+
+        .data-filled-section, .standard-row, .stat-grid, .remarks-area {
+            padding: 16px 20px;
+            border-radius: 28px;
+        }
+        .data-filled-section {
+            background: #ffffff;
+            margin-bottom: 20px;
+            border-left: 2px solid #000000;
+        }
+        .data-filled-section input {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 40px;
+            border: 1.5px solid var(--border-light);
+            font-size: 1rem;
+            margin-top: 8px;
+        }
+        .standard-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            background: #ffffff;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .standard-field {
+            flex: 1 1 160px;
+            min-width: 140px;
+        }
+        .standard-field label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #7d68a5;
+            text-transform: uppercase;
+        }
+        .standard-field input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 40px;
+            border: 1.5px solid var(--border-light);
+            font-weight: 600;
+        }
+        .auto-calc-field {
+            background: #f2f2f2;
+            color: #000000;
+        }
+        .check-status {
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+        .check-status.pass {
+            background: #f2f2f2;
+            color: #000000;
+        }
+        .check-status.fail {
+            background: #f2f2f2;
+            color: #000000;
+        }
+        .variety-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .variety-row > div {
+            flex: 1 1 180px;
+        }
+        .variety-row input, .variety-row select, .time-display {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 48px;
+            border: 1.5px solid var(--border-light);
+            background: #ffffff;
+            color: #000000;
+        }
+        .time-display {
+            background: #f2f2f2;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 24px;
+            border: 1px solid var(--border-light);
+            margin-bottom: 24px;
+            -webkit-overflow-scrolling: touch;
+            max-height: 450px;
+            overflow-y: auto;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            min-width: 360px;
+        }
+        .data-table th {
+            background: #000000;
+            color: #000000;
+            padding: 12px 6px;
+            position: sticky;
+            top: 0;
+        }
+        .data-table td {
+            border: 1px solid #000000;
+            padding: 8px 4px;
+        }
+        .line-input {
+            width: 100%;
+            padding: 8px 4px;
+            text-align: center;
+            border-radius: 28px;
+            border: 1px solid #000000;
+            background: white;
+        }
+        .below-standard-input {
+            background-color: #ffe0e0 !important;
+            border: 1px solid #e07c7c;
+            font-weight: 700;
+            color: #b13b2d;
+        }
+
+        .stat-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            background: #ffffff;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 24px;
+            padding: 12px 10px;
+            flex: 1 1 130px;
+            text-align: center;
+            border-bottom: 2px solid #000000;
+        }
+        .stat-value {
+            font-size: clamp(1.2rem, 5vw, 1.8rem);
+            font-weight: 800;
+            color: #000000;
+        }
+
+        .chart-container {
+            margin: 24px 0;
+            background: white;
+            padding: 12px;
+            border-radius: 28px;
+            border: 1px solid var(--border-light);
+        }
+        canvas {
+            width: 100% !important;
+            height: auto !important;
+            max-height: 380px;
+        }
+        .legend-note {
+            font-size: 0.65rem;
+            text-align: center;
+            margin-top: 12px;
+            color: var(--text-soft);
+            background: #f2f2f2;
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 40px;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .global-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            justify-content: center;
+            margin: 24px 0 16px;
+        }
+        .report-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: center;
+            margin: 20px 0 10px;
+            padding: 16px;
+            background: #ffffff;
+            border-radius: 48px;
+            border: 1px solid var(--border-light);
+        }
+        .report-btn {
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid #000000;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-whatsapp-text {
+            background: #000000;
+            color: #ffffff;
+            border: 1px solid #000000;
+        }
+        .btn-whatsapp-image {
+            background: #000000;
+            color: #ffffff;
+            border: 1px solid #000000;
+        }
+        .btn-excel {
+            background: #000000;
+            color: #ffffff;
+            border: 1px solid #000000;
+        }
+        .btn-primary {
+            background: #000000;
+            color: #ffffff;
+            border: 1px solid #000000;
+        }
+        .btn-reset {
+            background: #ffffff;
+            color: #000000;
+            border: 1px solid #000000;
+        }
+        .remarks-area textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 24px;
+            border: 1.5px solid var(--border-light);
+            font-size: 1rem;
+            margin-top: 8px;
+            resize: vertical;
+        }
+        @media (max-width: 640px) {
+            .report-options, .global-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .report-btn, .global-buttons button {
+                justify-content: center;
+            }
+            .standard-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .sheet {
+                padding: 16px;
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.75);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 48px;
+            max-width: 380px;
+            width: 90%;
+            padding: 28px;
+            text-align: center;
+        }
+        .spinner {
+            border: 4px solid #e3dcf2;
+            border-top: 4px solid #9a86c4;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 0.8s linear infinite;
+            margin: 16px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #000000;
+            font-size: 0.9rem;
+            padding: 10px 0 4px;
+        }
+        .line-number-cell {
+            font-weight: 800;
+            background-color: #f2f2f2;
+        }
+        .app-content {
+            display: block;
+        }
+        .toast-msg {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #000000;
+            color: #000000;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-weight: 600;
+            z-index: 10001;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+    
+        @page {
+            size: A4 landscape;
+            margin: 6mm;
+        }
+        @media print {
+            html, body {
+                width: 297mm !important;
+                height: 210mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                overflow: hidden !important;
+            }
+            body {
+                font-size: 10px !important;
+            }
+            .main-container {
+                max-width: none !important;
+                width: 100% !important;
+                margin: 0 !important;
+            }
+            .brand-header, .sheet {
+                box-shadow: none !important;
+            }
+            .sheet {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                margin-bottom: 6px !important;
+                padding: 10px !important;
+                border-radius: 18px !important;
+            }
+            .brand-header {
+                margin-bottom: 8px !important;
+                padding: 10px 12px !important;
+                border-radius: 18px !important;
+            }
+            .data-filled-section, .standard-row, .stat-grid, .remarks-area {
+                padding: 8px 10px !important;
+                border-radius: 14px !important;
+            }
+            .table-wrapper {
+                max-height: none !important;
+                overflow: visible !important;
+                margin-bottom: 10px !important;
+            }
+            .data-table th, .data-table td {
+                padding: 4px 3px !important;
+                font-size: 9px !important;
+            }
+            .chart-container {
+                margin: 8px 0 !important;
+                padding: 6px !important;
+                border-radius: 16px !important;
+            }
+            canvas {
+                max-height: 160px !important;
+            }
+            .report-options, .global-buttons, .tabs, .action-buttons, .modal, .toast-msg {
+                display: none !important;
+            }
+            footer {
+                position: fixed;
+                bottom: 2mm;
+                left: 0;
+                right: 0;
+                text-align: center;
+                font-size: 10px !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+        }
+
+        /* Ambaji Foods unified selector theme */
+        body {
+            background: radial-gradient(circle at 50% -10%, #183a68 0, #0c1735 38%, #070d22 100%);
+            color: #eef7ff;
+        }
+        .back-home {
+            display: inline-flex;
+            align-items: center;
+            margin: 0 0 16px;
+            padding: 10px 16px;
+            border: 1px solid #57cfff55;
+            border-radius: 12px;
+            background: #45aaff16;
+            color: #dff7ff;
+            font-weight: 800;
+            text-decoration: none;
+        }
+        .back-home:hover { background: #45aaff2b; }
+        .brand-header, .sheet, .report-options {
+            background: linear-gradient(145deg, #101d3d, #0c1632);
+            border-color: #4abfff45;
+            color: #eef7ff;
+            box-shadow: 0 14px 38px #00051f70;
+        }
+        .brand-header h1,
+        .sheet h2,
+        .data-filled-section label,
+        .standard-field label,
+        .variety-row label,
+        .remarks-area label,
+        footer { color: #eef7ff !important; }
+        .data-filled-section, .standard-row, .stat-grid, .remarks-area {
+            background: #101d3d;
+            border-color: #4abfff45;
+        }
+        .data-filled-section input,
+        .standard-field input,
+        .variety-row input,
+        .variety-row select,
+        .remarks-area textarea,
+        .line-input,
+        .time-display {
+            background: #09142e;
+            border-color: #38537d;
+            color: #f3f8ff;
+        }
+        .auto-calc-field, .time-display, .line-number-cell, .check-status {
+            background: #14264a !important;
+            color: #dcecff !important;
+        }
+        .table-wrapper, .chart-container { border-color: #38537d; background: #fff; }
+        .data-table th { background: linear-gradient(135deg, #218fca, #405fd3); color: #fff; }
+        .data-table td { border-color: #38537d; color: #0b1630; }
+        .tab-btn, .btn-primary, .btn-whatsapp-text, .btn-whatsapp-image, .btn-excel {
+            background: linear-gradient(135deg, #48cdf5, #397eea 58%, #5a57d9);
+            border-color: #63dfff;
+            color: #fff;
+        }
+        .tab-btn.active { background: linear-gradient(135deg, #57e1ff, #4d78f0); color: #06142d; }
+        .btn-reset { background: #14264a; border-color: #45638d; color: #dcecff; }
+        .toast-msg { background: #10264a; color: #fff; border: 1px solid #54d8ff; }
+        @media print { .back-home { display: none !important; } }
+    </style>
+</head>
+<body>
+    <div id="appContent" class="app-content">
+        <div class="main-container">
+            <a class="back-home" href="index.html">← Ambaji Foods Form Selector</a>
+            <div class="brand-header">
+                <h1>Ambaji Foods (India) Private Limited, Kanpur</h1>
+                <div>Process Parameter Line Weight Quality Report</div>
+                <div style="margin-top:8px;font-size:14px;line-height:1.5;">Version: 2.00 &nbsp;|&nbsp; Re-Issue Date: 01/04/26 &nbsp;|&nbsp; Document ID: AFIPL/PRD/FRM/20</div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="oven">Oven Section</button>
+                <button class="tab-btn" data-tab="stacker">Stacker End</button>
+            </div>
+
+            <!-- OVEN SHEET -->
+            <div id="ovenSheet" class="sheet active-sheet">
+                <h2 style="color:#000000; margin-bottom: 18px;">Oven Section - Line Weight with Control Limits</h2>
+                <div class="data-filled-section">
+                    <label>✍️ DATA FILLED BY</label>
+                    <input type="text" id="ovenFilledBy" placeholder="Enter name of person filling data" style="width:100%;">
+                </div>
+                <div class="standard-row">
+                    <div class="standard-field"><label>🍪 Weight of 1 Biscuit (g)</label><input type="number" id="ovenBiscuitWeight" value="5" step="any"></div>
+                    <div class="standard-field"><label>🔢 Number of Biscuits</label><input type="number" id="ovenBiscuitCount" value="12" step="1"></div>
+                    <div class="standard-field"><label>🎯 Standard Weight (Auto)</label><input type="number" id="ovenStdWeight" readonly class="auto-calc-field"></div>
+                    <div class="standard-field"><label>📊 UCL (in grams)</label><input type="number" id="ovenUcl" placeholder="UCL value" step="any"></div>
+                    <div class="standard-field"><label>📉 LCL (in grams)</label><input type="number" id="ovenLcl" placeholder="LCL value" step="any"></div>
+                    <div id="ovenCheckStatus" class="check-status pass">✓ Within Limits</div>
+                </div>
+                <div class="variety-row">
+                    <div><label>🍪 Variety / Product</label>
+<select id="ovenVariety">
+    <option value="">Select Variety</option>
+    <option value="Parle G">Parle G</option>
+    <option value="Cashew Cookies">Cashew Cookies</option>
+    <option value="Butter Cookies">Butter Cookies</option>
+    <option value="Coconut Premium Cookies">Coconut Premium Cookies</option>
+    <option value="Coconut Regular Cookies">Coconut Regular Cookies</option>
+</select></div>
+                    <div><label>Date</label><input type="text" id="ovenDate" placeholder="DD/MM/YY" maxlength="8"></div>
+                    <div><label>Shift</label><select id="ovenShift"><option value="">Select Shift</option><option value="Day">Day Shift</option><option value="Night">Night Shift</option></select></div>
+                    <div><label>⏰ Time</label><div class="time-display" id="ovenTimeDisplay">--:--:--</div></div>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table" id="ovenTable">
+                        <thead><tr><th>Line No.</th><th>Wt (In gms)</th></tr></thead>
+                        <tbody id="ovenTbody"></tbody>
+                    </table>
+                </div>
+                <div class="stat-grid">
+                    <div class="stat-card"><div class="stat-label-sm">📊 AVERAGE</div><div class="stat-value" id="ovenAvg">—</div></div>
+                    <div class="stat-card"><div class="stat-label-sm">📈 MAX WEIGHT</div><div class="stat-value" id="ovenMaxVal">—</div><div id="ovenMaxLine" style="font-size:0.7rem;"></div></div>
+                    <div class="stat-card"><div class="stat-label-sm">📉 MIN WEIGHT</div><div class="stat-value" id="ovenMinVal">—</div><div id="ovenMinLine" style="font-size:0.7rem;"></div></div>
+                    <div class="stat-card"><div class="stat-label-sm">⚖️ DIFFERENCE</div><div class="stat-value" id="ovenDiff">—</div></div><div class="stat-card"><div class="stat-label-sm">WORKING SIDE AVG WEIGHT</div><div class="stat-value" id="ovenWorkingWt">—</div></div><div class="stat-card"><div class="stat-label-sm">NON-WORKING SIDE AVG WEIGHT WEIGHT</div><div class="stat-value" id="ovenNonWorkingWt">—</div></div>
+                </div>
+                <div class="chart-container"><canvas id="ovenChart"></canvas><div class="legend-note">Black: Actual | Grey Dashed: UCL/LCL | Grey: Standard</div></div>
+                <div class="remarks-area"><label>📝 Action / Remarks</label><textarea id="ovenRemarks" rows="4" placeholder="Quality notes..."></textarea></div>
+                <div class="action-buttons"><button class="btn-reset" id="resetOvenBtn">⟳ Reset Oven Data</button><button class="btn-primary" id="exportOvenCsvBtn">📎 Export CSV</button></div>
+            </div>
+
+            <!-- STACKER SHEET -->
+            <div id="stackerSheet" class="sheet">
+                <h2 style="color:#000000; margin-bottom: 18px;">Stacker End - Line Weight with Control Limits</h2>
+                <div class="data-filled-section"><label>✍️ DATA FILLED BY</label><input type="text" id="stackerFilledBy" placeholder="Enter name" style="width:100%;"></div>
+                <div class="standard-row">
+                    <div class="standard-field"><label>🍪 Weight of 1 Biscuit (g)</label><input type="number" id="stackerBiscuitWeight" value="5" step="any"></div>
+                    <div class="standard-field"><label>🔢 Number of Biscuits in Round</label><input type="number" id="stackerBiscuitCount" value="16" step="1"></div>
+                    <div class="standard-field"><label>🎯 Standard Weight (Auto)</label><input type="number" id="stackerStdWeight" readonly class="auto-calc-field"></div>
+                    <div class="standard-field"><label>📊 UCL (in grams)</label><input type="number" id="stackerUcl" placeholder="UCL" step="any"></div>
+                    <div class="standard-field"><label>📉 LCL (in grams)</label><input type="number" id="stackerLcl" placeholder="LCL" step="any"></div>
+                    <div id="stackerCheckStatus" class="check-status pass">✓ Within Limits</div>
+                </div>
+                <div class="variety-row"><div><label>🍪 Variety / Product</label>
+<select id="stackerVariety">
+    <option value="">Select Variety</option>
+    <option value="Parle G">Parle G</option>
+    <option value="Cashew Cookies">Cashew Cookies</option>
+    <option value="Butter Cookies">Butter Cookies</option>
+    <option value="Coconut Premium Cookies">Coconut Premium Cookies</option>
+    <option value="Coconut Regular Cookies">Coconut Regular Cookies</option>
+</select></div><div><label>Date</label><input type="text" id="stackerDate" placeholder="DD/MM/YY" maxlength="8"></div><div><label>Shift</label><select id="stackerShift"><option value="">Select Shift</option><option value="Day">Day Shift</option><option value="Night">Night Shift</option></select></div><div><label>⏰ Time</label><div class="time-display" id="stackerTimeDisplay">--:--:--</div></div></div>
+                <div class="table-wrapper"><table class="data-table" id="stackerTable"><thead><tr><th>Line No.</th><th>Wt (In gms)</th></tr></thead><tbody id="stackerTbody"></tbody></table></div>
+                <div class="stat-grid">
+                    <div class="stat-card"><div class="stat-label-sm">📊 AVERAGE</div><div class="stat-value" id="stackerAvg">—</div></div>
+                    <div class="stat-card"><div class="stat-label-sm">📈 MAX WEIGHT</div><div class="stat-value" id="stackerMaxVal">—</div><div id="stackerMaxLine" style="font-size:0.7rem;"></div></div>
+                    <div class="stat-card"><div class="stat-label-sm">📉 MIN WEIGHT</div><div class="stat-value" id="stackerMinVal">—</div><div id="stackerMinLine" style="font-size:0.7rem;"></div></div>
+                    <div class="stat-card"><div class="stat-label-sm">⚖️ DIFFERENCE</div><div class="stat-value" id="stackerDiff">—</div></div><div class="stat-card"><div class="stat-label-sm">WORKING SIDE AVG WEIGHT</div><div class="stat-value" id="stackerWorkingWt">—</div></div><div class="stat-card"><div class="stat-label-sm">NON-WORKING SIDE AVG WEIGHT WEIGHT</div><div class="stat-value" id="stackerNonWorkingWt">—</div></div>
+                </div>
+                <div class="chart-container"><canvas id="stackerChart"></canvas><div class="legend-note">Black: Actual | Grey Dashed: UCL/LCL | Grey: Standard</div></div>
+                <div class="remarks-area"><label>📝 Action / Remarks</label><textarea id="stackerRemarks" rows="4" placeholder="Packing remarks..."></textarea></div>
+                <div class="action-buttons"><button class="btn-reset" id="resetStackerBtn">⟳ Reset Stacker Data</button><button class="btn-primary" id="exportStackerCsvBtn">📎 Export CSV</button></div>
+            </div>
+
+            <div class="report-options">
+                <button id="whatsappTextBtn" class="report-btn btn-whatsapp-text">💬 WhatsApp Report (Text)</button>
+                <button id="whatsappImageBtn" class="report-btn btn-whatsapp-image">🖼️ WhatsApp Report (Image)</button>
+                <button id="exportPdfBtn" class="report-btn btn-primary">📄 Export PDF</button>
+                <button id="exportExcelBtn" class="report-btn btn-excel">📊 Export Excel (Full Report)</button>
+            </div>
+
+            <div class="global-buttons">
+                <button id="globalResetBtn" class="btn-reset">🔄 Reset All Data</button>
+                <button id="saveSessionBtn" class="btn-primary">💾 Save Session</button>
+                <button id="loadSessionBtn" class="btn-primary">📂 Load Session</button>
+            </div>
+
+            <div id="loadingModal" class="modal"><div class="modal-content"><h3>🍪 Generating A4 Report...</h3><div class="spinner"></div><p>Please wait</p></div></div>
+            <div id="toastMsg" class="toast-msg"></div>
+            <footer><strong>Apps By Prateek Agarwal</strong><br>Line Weight Report Management System</footer>
+        </div>
+    </div>
+
+    <div id="reportImageContainer" style="position: fixed; top: -9999px; left: -9999px; width: 800px; background: white; z-index: -1;"></div>
+
+    <script>
+        function showToast(msg, duration = 3000) {
+            const toast = document.getElementById('toastMsg');
+            toast.textContent = msg;
+            toast.style.opacity = '1';
+            setTimeout(() => { toast.style.opacity = '0'; }, duration);
+        }
+
+        function formatDateDDMMYY(value) {
+            if (!value) return '';
+            const clean = String(value).replace(/[^\d]/g, '').slice(0, 6);
+            if (clean.length <= 2) return clean;
+            if (clean.length <= 4) return `${clean.slice(0,2)}/${clean.slice(2)}`;
+            return `${clean.slice(0,2)}/${clean.slice(2,4)}/${clean.slice(4,6)}`;
+        }
+
+        function normalizeDateDisplay(value) {
+            if (!value) return '';
+            if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+                const [yyyy, mm, dd] = value.split('-');
+                return `${dd}/${mm}/${yyyy.slice(-2)}`;
+            }
+            if (/^\d{2}\/\d{2}\/\d{2}$/.test(value)) return value;
+            return formatDateDDMMYY(value);
+        }
+
+        function initializeApp() {
+            const TOTAL_LINES = 36;
+            let ovenWeights = new Array(TOTAL_LINES).fill('');
+            let stackerWeights = new Array(TOTAL_LINES).fill('');
+            let ovenChart = null, stackerChart = null;
+
+            function updateTimeDisplays() {
+                const now = new Date();
+                const t = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+                if(document.getElementById('ovenTimeDisplay')) document.getElementById('ovenTimeDisplay').innerText = t;
+                if(document.getElementById('stackerTimeDisplay')) document.getElementById('stackerTimeDisplay').innerText = t;
+            }
+            setInterval(updateTimeDisplays, 1000);
+
+            const ovenVarietyEl = document.getElementById('ovenVariety');
+            const stackerVarietyEl = document.getElementById('stackerVariety');
+            if (ovenVarietyEl) ovenVarietyEl.addEventListener('change', () => applyVarietyDefaults('oven'));
+            if (stackerVarietyEl) stackerVarietyEl.addEventListener('change', () => applyVarietyDefaults('stacker'));
+
+            updateTimeDisplays();
+
+            ['ovenDate','stackerDate'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('input', (e) => {
+                    e.target.value = formatDateDDMMYY(e.target.value);
+                });
+                el.addEventListener('blur', (e) => {
+                    e.target.value = normalizeDateDisplay(e.target.value);
+                });
+            });
+
+
+            const varietyDefaults = {
+                'Parle G': { biscuitWeight: 5, ovenCount: 12 },
+                'Cashew Cookies': { biscuitWeight: 5, ovenCount: 15 },
+                'Butter Cookies': { biscuitWeight: 5, ovenCount: 15 },
+                'Coconut Premium Cookies': { biscuitWeight: 4.2, ovenCount: 15 },
+                'Coconut Regular Cookies': { biscuitWeight: 4.0, ovenCount: 15 }
+            };
+
+            function applyVarietyDefaults(section) {
+                const varietyEl = document.getElementById(`${section}Variety`);
+                if (!varietyEl) return;
+                const selected = varietyEl.value;
+                const cfg = varietyDefaults[selected];
+                if (!cfg) return;
+
+                const bw = document.getElementById(`${section}BiscuitWeight`);
+                const bc = document.getElementById(`${section}BiscuitCount`);
+
+                if (bw) bw.value = cfg.biscuitWeight;
+                if (section === 'oven' && bc) bc.value = cfg.ovenCount;
+
+                if (section === 'oven') updateOven();
+                if (section === 'stacker') updateStacker();
+            }
+
+            function updateStandardWeight(section) {
+                const biscuitWt = parseFloat(document.getElementById(`${section}BiscuitWeight`).value) || 0;
+                const biscuitCount = parseInt(document.getElementById(`${section}BiscuitCount`).value) || 0;
+                const stdWeight = biscuitWt * biscuitCount;
+                const stdInput = document.getElementById(`${section}StdWeight`);
+                if(stdInput) stdInput.value = stdWeight.toFixed(2);
+                return stdWeight;
+            }
+
+            function getStandardWeight(section) {
+                updateStandardWeight(section);
+                return parseFloat(document.getElementById(`${section}StdWeight`).value) || 0;
+            }
+
+            function applyHighlights() {
+                const ovenStd = getStandardWeight('oven');
+                const stackerStd = getStandardWeight('stacker');
+                for(let i=0; i<TOTAL_LINES; i++) {
+                    const ovenInput = document.querySelector(`#ovenTbody tr:nth-child(${i+1}) td:nth-child(2) input`);
+                    if(ovenInput) {
+                        const val = parseFloat(ovenInput.value);
+                        if(!isNaN(val) && val !== '' && val < ovenStd) ovenInput.classList.add('below-standard-input');
+                        else ovenInput.classList.remove('below-standard-input');
+                    }
+                    const stackerInput = document.querySelector(`#stackerTbody tr:nth-child(${i+1}) td:nth-child(2) input`);
+                    if(stackerInput) {
+                        const val = parseFloat(stackerInput.value);
+                        if(!isNaN(val) && val !== '' && val < stackerStd) stackerInput.classList.add('below-standard-input');
+                        else stackerInput.classList.remove('below-standard-input');
+                    }
+                }
+            }
+
+            function computeStats(arr) {
+                let valid = arr.filter(w => w !== '' && !isNaN(w)).map(Number);
+                if(valid.length === 0) return { avg: null, max: null, min: null, maxLine: null, minLine: null, range: null };
+                let maxVal = Math.max(...valid), minVal = Math.min(...valid);
+                let avgVal = valid.reduce((a,b)=>a+b,0)/valid.length;
+                let maxLine = arr.findIndex(w => !isNaN(w) && parseFloat(w) === maxVal) + 1;
+                let minLine = arr.findIndex(w => !isNaN(w) && parseFloat(w) === minVal) + 1;
+                return { avg: avgVal, max: maxVal, min: minVal, maxLine, minLine, range: maxVal - minVal };
+            }
+            
+            function getBelowStandardLines(arr, stdWeight) {
+                const below = [];
+                for(let i=0; i<arr.length; i++) {
+                    const w = arr[i];
+                    if(w !== '' && !isNaN(w) && parseFloat(w) < stdWeight) below.push({ line: i+1, weight: parseFloat(w) });
+                }
+                return below;
+            }
+
+
+            function avgRange(weightsArr, startIdx, endIdx) {
+                let total = 0;
+                let count = 0;
+                for(let i = startIdx; i <= endIdx; i++) {
+                    const w = weightsArr[i];
+                    if(w !== '' && !isNaN(w)) {
+                        total += Number(w);
+                        count += 1;
+                    }
+                }
+                return count > 0 ? (total / count) : null;
+            }
+
+            function getSideWeights(weightsArr) {
+                return {
+                    working: avgRange(weightsArr, 0, 15),
+                    nonWorking: avgRange(weightsArr, TOTAL_LINES - 16, TOTAL_LINES - 1)
+                };
+            }
+
+            function checkLimits(weights, ucl, lcl) {
+                if(!ucl || !lcl || isNaN(ucl) || isNaN(lcl)) return true;
+                for(let w of weights) if(w !== '' && !isNaN(w) && (w < lcl || w > ucl)) return false;
+                return true;
+            }
+            
+            function updateChartsLimits() {
+                const labels = Array.from({length:TOTAL_LINES}, (_,i)=> (i+1).toString());
+                if(ovenChart){
+                    let u = parseFloat(document.getElementById('ovenUcl').value), l = parseFloat(document.getElementById('ovenLcl').value), s = getStandardWeight('oven');
+                    ovenChart.data.datasets[1].data = labels.map(()=> isNaN(u)?null:u);
+                    ovenChart.data.datasets[2].data = labels.map(()=> isNaN(l)?null:l);
+                    ovenChart.data.datasets[3].data = labels.map(()=> isNaN(s)?null:s);
+                    ovenChart.update();
+                }
+                if(stackerChart){
+                    let u = parseFloat(document.getElementById('stackerUcl').value), l = parseFloat(document.getElementById('stackerLcl').value), s = getStandardWeight('stacker');
+                    stackerChart.data.datasets[1].data = labels.map(()=> isNaN(u)?null:u);
+                    stackerChart.data.datasets[2].data = labels.map(()=> isNaN(l)?null:l);
+                    stackerChart.data.datasets[3].data = labels.map(()=> isNaN(s)?null:s);
+                    stackerChart.update();
+                }
+            }
+            
+            function updateOven() {
+                getStandardWeight('oven');
+                let s = computeStats(ovenWeights);
+                let side = getSideWeights(ovenWeights);
+                document.getElementById('ovenAvg').innerHTML = s.avg !== null ? s.avg.toFixed(2)+' g' : '—';
+                document.getElementById('ovenMaxVal').innerHTML = s.max !== null ? s.max.toFixed(2)+' g' : '—';
+                document.getElementById('ovenMinVal').innerHTML = s.min !== null ? s.min.toFixed(2)+' g' : '—';
+                document.getElementById('ovenMaxLine').innerHTML = s.maxLine ? `Line #${s.maxLine}` : '';
+                document.getElementById('ovenMinLine').innerHTML = s.minLine ? `Line #${s.minLine}` : '';
+                document.getElementById('ovenDiff').innerHTML = s.range !== null ? s.range.toFixed(2)+' g' : '—';
+                document.getElementById('ovenWorkingWt').innerHTML = side.working !== null ? side.working.toFixed(2)+' g' : '—';
+                document.getElementById('ovenNonWorkingWt').innerHTML = side.nonWorking !== null ? side.nonWorking.toFixed(2)+' g' : '—';
+                let u = parseFloat(document.getElementById('ovenUcl').value), l = parseFloat(document.getElementById('ovenLcl').value);
+                let within = checkLimits(ovenWeights, u, l);
+                let statusDiv = document.getElementById('ovenCheckStatus');
+                if(u && l && !isNaN(u) && !isNaN(l)) {
+                    statusDiv.className = within ? 'check-status pass' : 'check-status fail';
+                    statusDiv.innerHTML = within ? '✓ All within Limits' : '⚠ Some weights outside UCL/LCL!';
+                } else { statusDiv.innerHTML = '⚙ Set UCL & LCL values'; statusDiv.className = 'check-status'; }
+                if(ovenChart) { ovenChart.data.datasets[0].data = ovenWeights.map(w => (w!=='' && !isNaN(w)) ? Number(w) : null); ovenChart.update(); }
+                updateChartsLimits();
+                applyHighlights();
+            }
+            
+            function updateStacker() {
+                getStandardWeight('stacker');
+                let s = computeStats(stackerWeights);
+                let side = getSideWeights(stackerWeights);
+                document.getElementById('stackerAvg').innerHTML = s.avg !== null ? s.avg.toFixed(2)+' g' : '—';
+                document.getElementById('stackerMaxVal').innerHTML = s.max !== null ? s.max.toFixed(2)+' g' : '—';
+                document.getElementById('stackerMinVal').innerHTML = s.min !== null ? s.min.toFixed(2)+' g' : '—';
+                document.getElementById('stackerMaxLine').innerHTML = s.maxLine ? `Line #${s.maxLine}` : '';
+                document.getElementById('stackerMinLine').innerHTML = s.minLine ? `Line #${s.minLine}` : '';
+                document.getElementById('stackerDiff').innerHTML = s.range !== null ? s.range.toFixed(2)+' g' : '—';
+                document.getElementById('stackerWorkingWt').innerHTML = side.working !== null ? side.working.toFixed(2)+' g' : '—';
+                document.getElementById('stackerNonWorkingWt').innerHTML = side.nonWorking !== null ? side.nonWorking.toFixed(2)+' g' : '—';
+                let u = parseFloat(document.getElementById('stackerUcl').value), l = parseFloat(document.getElementById('stackerLcl').value);
+                let within = checkLimits(stackerWeights, u, l);
+                let statusDiv = document.getElementById('stackerCheckStatus');
+                if(u && l && !isNaN(u) && !isNaN(l)) {
+                    statusDiv.className = within ? 'check-status pass' : 'check-status fail';
+                    statusDiv.innerHTML = within ? '✓ All within Limits' : '⚠ Some weights outside UCL/LCL!';
+                } else { statusDiv.innerHTML = '⚙ Set UCL & LCL values'; statusDiv.className = 'check-status'; }
+                if(stackerChart) { stackerChart.data.datasets[0].data = stackerWeights.map(w => (w!=='' && !isNaN(w)) ? Number(w) : null); stackerChart.update(); }
+                updateChartsLimits();
+                applyHighlights();
+            }
+            
+            function renderTable(type) {
+                const tbody = type === 'oven' ? document.getElementById('ovenTbody') : document.getElementById('stackerTbody');
+                const arr = type === 'oven' ? ovenWeights : stackerWeights;
+                const updater = type === 'oven' ? updateOven : updateStacker;
+                tbody.innerHTML = '';
+                for(let i=0; i<TOTAL_LINES; i++) {
+                    let row = tbody.insertRow();
+                    let c0 = row.insertCell(0); c0.textContent = (i+1).toString(); c0.className = 'line-number-cell';
+                    let c1 = row.insertCell(1);
+                    let inp = document.createElement('input'); inp.type = 'number'; inp.step = 'any'; inp.placeholder = 'g'; inp.className = 'line-input';
+                    inp.value = arr[i] !== '' ? arr[i] : '';
+                    inp.addEventListener('change', ((idx) => (e) => {
+                        let val = e.target.value.trim();
+                        arr[idx] = (val === '') ? '' : (isNaN(parseFloat(val)) ? '' : parseFloat(val));
+                        updater();
+                    })(i));
+                    c1.appendChild(inp);
+                }
+                applyHighlights();
+            }
+            
+            function initCharts() {
+                const labels = Array.from({length:TOTAL_LINES}, (_,i)=> (i+1).toString());
+                const ovenCtx = document.getElementById('ovenChart').getContext('2d');
+                if(ovenChart) ovenChart.destroy();
+                ovenChart = new Chart(ovenCtx, {
+                    type: 'line', data: { labels, datasets: [
+                        { label: '📊 Oven Weight (g)', data: new Array(TOTAL_LINES).fill(null), borderColor: '#000000', backgroundColor: 'rgba(0,0,0,0.03)', tension: 0.2, fill: true, pointRadius: 3, pointBackgroundColor: '#000000', borderWidth: 2 },
+                        { label: 'UCL', data: new Array(TOTAL_LINES).fill(null), borderColor: '#666666', borderDash: [8,6], fill: false, pointRadius: 0, borderWidth: 1.5 },
+                        { label: 'LCL', data: new Array(TOTAL_LINES).fill(null), borderColor: '#666666', borderDash: [8,6], fill: false, pointRadius: 0, borderWidth: 1.5 },
+                        { label: 'Standard', data: new Array(TOTAL_LINES).fill(null), borderColor: '#444444', borderDash: [6,10], fill: false, pointRadius: 0, borderWidth: 1.5 }
+                    ] }, options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'top', labels: { font: { size: 10 } } }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw !== null ? ctx.raw.toFixed(2)+' g' : 'N/A'}` } } }, scales: { y: { title: { display: true, text: 'Weight (g)', font: { size: 10 } } }, x: { title: { display: true, text: 'Line No.', font: { size: 10 } }, ticks: { stepSize: 4, maxRotation: 45 } } } }
+                });
+                const stackerCtx = document.getElementById('stackerChart').getContext('2d');
+                if(stackerChart) stackerChart.destroy();
+                stackerChart = new Chart(stackerCtx, {
+                    type: 'line', data: { labels, datasets: [
+                        { label: '📦 Stacker Weight (g)', data: new Array(TOTAL_LINES).fill(null), borderColor: '#8f7bbd', backgroundColor: 'rgba(130,100,180,0.05)', tension: 0.2, fill: true, pointRadius: 3, pointBackgroundColor: '#a592cb', borderWidth: 2 },
+                        { label: 'UCL', data: new Array(TOTAL_LINES).fill(null), borderColor: '#666666', borderDash: [8,6], fill: false, pointRadius: 0, borderWidth: 1.5 },
+                        { label: 'LCL', data: new Array(TOTAL_LINES).fill(null), borderColor: '#666666', borderDash: [8,6], fill: false, pointRadius: 0, borderWidth: 1.5 },
+                        { label: 'Standard', data: new Array(TOTAL_LINES).fill(null), borderColor: '#444444', borderDash: [6,10], fill: false, pointRadius: 0, borderWidth: 1.5 }
+                    ] }, options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'top', labels: { font: { size: 10 } } }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw !== null ? ctx.raw.toFixed(2)+' g' : 'N/A'}` } } }, scales: { y: { title: { display: true, text: 'Weight (g)', font: { size: 10 } } }, x: { title: { display: true, text: 'Line No.', font: { size: 10 } }, ticks: { stepSize: 4, maxRotation: 45 } } } }
+                });
+            }
+            
+            const today = new Date().toISOString().slice(0,10);
+            document.getElementById('ovenDate').value = today;
+            document.getElementById('stackerDate').value = today;
+            
+            function switchTab(tab) {
+                document.getElementById('ovenSheet').classList.toggle('active-sheet', tab === 'oven');
+                document.getElementById('stackerSheet').classList.toggle('active-sheet', tab === 'stacker');
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+            }
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+            
+            ['ovenBiscuitWeight', 'ovenBiscuitCount'].forEach(id => {
+                document.getElementById(id).addEventListener('input', () => { updateOven(); });
+            });
+            ['stackerBiscuitWeight', 'stackerBiscuitCount'].forEach(id => {
+                document.getElementById(id).addEventListener('input', () => { updateStacker(); });
+            });
+            
+            document.getElementById('resetOvenBtn').onclick = () => { ovenWeights.fill(''); renderTable('oven'); updateOven(); document.getElementById('ovenFilledBy').value=''; document.getElementById('ovenVariety').value=''; document.getElementById('ovenRemarks').value=''; };
+            document.getElementById('resetStackerBtn').onclick = () => { stackerWeights.fill(''); renderTable('stacker'); updateStacker(); document.getElementById('stackerFilledBy').value=''; document.getElementById('stackerVariety').value=''; document.getElementById('stackerRemarks').value=''; };
+            document.getElementById('globalResetBtn').onclick = () => { ovenWeights.fill(''); stackerWeights.fill(''); renderTable('oven'); renderTable('stacker'); updateOven(); updateStacker(); };
+            document.getElementById('saveSessionBtn').onclick = () => { localStorage.setItem('ambajiQC_full', JSON.stringify({ ovenWeights, stackerWeights, ovenFilledBy:document.getElementById('ovenFilledBy').value, ovenVariety:document.getElementById('ovenVariety').value, ovenRemarks:document.getElementById('ovenRemarks').value, ovenBiscuitWeight:document.getElementById('ovenBiscuitWeight').value, ovenBiscuitCount:document.getElementById('ovenBiscuitCount').value, ovenUcl:document.getElementById('ovenUcl').value, ovenLcl:document.getElementById('ovenLcl').value, ovenDate:document.getElementById('ovenDate').value, ovenShift:document.getElementById('ovenShift').value, stackerFilledBy:document.getElementById('stackerFilledBy').value, stackerVariety:document.getElementById('stackerVariety').value, stackerRemarks:document.getElementById('stackerRemarks').value, stackerBiscuitWeight:document.getElementById('stackerBiscuitWeight').value, stackerBiscuitCount:document.getElementById('stackerBiscuitCount').value, stackerUcl:document.getElementById('stackerUcl').value, stackerLcl:document.getElementById('stackerLcl').value, stackerDate:document.getElementById('stackerDate').value, stackerShift:document.getElementById('stackerShift').value })); showToast('✅ Session saved'); };
+            document.getElementById('loadSessionBtn').onclick = () => { let d = localStorage.getItem('ambajiQC_full'); if(!d) { showToast('No saved session'); return; } let s = JSON.parse(d); if(s.ovenWeights) { ovenWeights = s.ovenWeights; renderTable('oven'); } if(s.stackerWeights) { stackerWeights = s.stackerWeights; renderTable('stacker'); } document.getElementById('ovenFilledBy').value = s.ovenFilledBy||''; document.getElementById('ovenVariety').value = s.ovenVariety||''; document.getElementById('ovenRemarks').value = s.ovenRemarks||''; document.getElementById('ovenBiscuitWeight').value = s.ovenBiscuitWeight||5; document.getElementById('ovenBiscuitCount').value = s.ovenBiscuitCount||12; document.getElementById('ovenUcl').value = s.ovenUcl||''; document.getElementById('ovenLcl').value = s.ovenLcl||''; document.getElementById('ovenDate').value = s.ovenDate||today; document.getElementById('ovenShift').value = s.ovenShift||''; document.getElementById('stackerFilledBy').value = s.stackerFilledBy||''; document.getElementById('stackerVariety').value = s.stackerVariety||''; document.getElementById('stackerRemarks').value = s.stackerRemarks||''; document.getElementById('stackerBiscuitWeight').value = s.stackerBiscuitWeight||5; document.getElementById('stackerBiscuitCount').value = s.stackerBiscuitCount||16; document.getElementById('stackerUcl').value = s.stackerUcl||''; document.getElementById('stackerLcl').value = s.stackerLcl||''; document.getElementById('stackerDate').value = s.stackerDate||today; document.getElementById('stackerShift').value = s.stackerShift||''; updateOven(); updateStacker(); showToast('📀 Session loaded'); };
+            
+            document.getElementById('ovenUcl').addEventListener('input', updateOven);
+            document.getElementById('ovenLcl').addEventListener('input', updateOven);
+            document.getElementById('stackerUcl').addEventListener('input', updateStacker);
+            document.getElementById('stackerLcl').addEventListener('input', updateStacker);
+            
+            function isSectionFilled(weightsArr) {
+                return weightsArr.some(w => w !== '' && !isNaN(w));
+            }
+
+            function getDisplayShift() {
+                return document.getElementById('ovenShift').value || document.getElementById('stackerShift').value || '—';
+            }
+            
+            async function generateA4ReportImage(options = {}) {
+                const { shareImage = false, downloadImage = true, theme = 'color' } = options;
+                const modal = document.getElementById('loadingModal');
+                modal.style.display = 'flex';
+                try {
+                    const ovenFilled = isSectionFilled(ovenWeights);
+                    const stackerFilled = isSectionFilled(stackerWeights);
+                    if(!ovenFilled && !stackerFilled) {
+                        showToast('No data filled in any section!', 3000);
+                        return null;
+                    }
+
+                    const container = document.getElementById('reportImageContainer');
+                    container.innerHTML = '';
+
+                    
+async function renderFixedChartImage(sectionKey, weightsArr, lineLabel, lineColor) {
+                        const isBW = theme === 'bw';
+                        const exportCanvas = document.createElement('canvas');
+                        exportCanvas.width = 1280;
+                        exportCanvas.height = 300;
+                        const ctx = exportCanvas.getContext('2d');
+                        const labels = Array.from({length: TOTAL_LINES}, (_, i) => (i + 1).toString());
+                        const ucl = parseFloat(document.getElementById(`${sectionKey}Ucl`).value);
+                        const lcl = parseFloat(document.getElementById(`${sectionKey}Lcl`).value);
+                        const std = getStandardWeight(sectionKey);
+                        const actualData = weightsArr.map(w => (w !== '' && !isNaN(w)) ? Number(w) : null);
+
+                        const underweightData = actualData.map(v => (v !== null && v < std) ? v : null);
+
+                        const chart = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels,
+                                datasets: [
+                                    {
+                                        label: lineLabel,
+                                        data: actualData,
+                                        borderColor: '#000000',
+                                        backgroundColor: 'rgba(0,0,0,0)',
+                                        pointBackgroundColor: '#000000',
+                                        pointBorderColor: '#000000',
+                                        pointRadius: 2,
+                                        pointHoverRadius: 2.5,
+                                        borderWidth: 2,
+                                        tension: 0,
+                                        spanGaps: false,
+                                        fill: false
+                                    },
+                                    {
+                                        label: 'Underweight',
+                                        data: underweightData,
+                                        type: 'scatter',
+                                        showLine: false,
+                                        pointRadius: 4,
+                                        pointHoverRadius: 4,
+                                        pointBorderWidth: 1.5,
+                                        pointBackgroundColor: isBW ? '#ffffff' : '#d32f2f',
+                                        pointBorderColor: '#000000'
+                                    },
+                                    {
+                                        label: 'UCL',
+                                        data: labels.map(() => isNaN(ucl) ? null : ucl),
+                                        borderColor: '#000000',
+                                        borderDash: [8, 6],
+                                        pointRadius: 0,
+                                        borderWidth: 1.2,
+                                        fill: false
+                                    },
+                                    {
+                                        label: 'LCL',
+                                        data: labels.map(() => isNaN(lcl) ? null : lcl),
+                                        borderColor: '#000000',
+                                        borderDash: [8, 6],
+                                        pointRadius: 0,
+                                        borderWidth: 1.2,
+                                        fill: false
+                                    },
+                                    {
+                                        label: 'Standard',
+                                        data: labels.map(() => isNaN(std) ? null : std),
+                                        borderColor: '#000000',
+                                        borderDash: [8, 8],
+                                        pointRadius: 0,
+                                        borderWidth: 1.2,
+                                        fill: false
+                                    }
+                                ]
+                            },
+                            options: {
+                                responsive: false,
+                                animation: false,
+                                devicePixelRatio: 2,
+                                layout: { padding: { top: 6, right: 10, bottom: 0, left: 10 } },
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                        align: 'center',
+                                        labels: {
+                                            boxWidth: 40,
+                                            boxHeight: 10,
+                                            padding: 14,
+                                            color: '#000000',
+                                            font: { size: 11, family: 'Segoe UI, Arial, sans-serif', weight: '600' }
+                                        }
+                                    },
+                                    tooltip: { enabled: false }
+                                },
+                                scales: {
+                                    x: {
+                                        title: { display: true, text: 'Line No.', color: '#000000', font: { size: 11, weight: '600' } },
+                                        ticks: { color: '#000000', autoSkip: false, maxRotation: 0, font: { size: 10 } },
+                                        grid: { color: 'rgba(0,0,0,0.12)' },
+                                        border: { color: '#000000' }
+                                    },
+                                    y: {
+                                        title: { display: true, text: 'Weight (g)', color: '#000000', font: { size: 11, weight: '600' } },
+                                        ticks: { color: '#000000', font: { size: 10 } },
+                                        grid: { color: 'rgba(0,0,0,0.12)' },
+                                        border: { color: '#000000' }
+                                    }
+                                }
+                            },
+                            plugins: [{
+                                id: 'exportBg',
+                                beforeDraw(chart) {
+                                    const {ctx, width, height} = chart;
+                                    ctx.save();
+                                    ctx.fillStyle = '#ffffff';
+                                    ctx.fillRect(0, 0, width, height);
+                                    ctx.restore();
+                                }
+                            }]
+                        });
+
+                        await new Promise(resolve => setTimeout(resolve, 80));
+                        const img = exportCanvas.toDataURL('image/png');
+                        chart.destroy();
+                        return img;
+                    }
+
+                    const ovenChartImg = await renderFixedChartImage('oven', ovenWeights, 'Oven Weight (g)', '#9a86c4');
+                    const stackerChartImg = await renderFixedChartImage('stacker', stackerWeights, 'Stacker Weight (g)', '#9a86c4');
+                    const rawDateStr = document.getElementById('ovenDate').value || document.getElementById('stackerDate').value || new Date().toISOString().slice(0,10);
+                    const dateStr = normalizeDateDisplay(rawDateStr);
+                    const timeStr = document.getElementById('ovenTimeDisplay').innerText || document.getElementById('stackerTimeDisplay').innerText || new Date().toLocaleTimeString('en-IN');
+                    const fileName = `Ambaji_Quality_Report_${rawDateStr.replace(/-/g, '')}.png`;
+
+                    function escapeHtml(v) {
+                        return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    }
+
+                    
+function buildReadingTable(weights, std, headColor) {
+                        const isBW = theme === 'bw';
+                        let html = `
+                            <table style="width:100%; border-collapse:collapse; table-layout:fixed; font-size:10px; margin-top:8px;">
+                                <thead>
+                                    <tr style="background:${isBW ? '#000000' : headColor}; color:#fff;">
+                        `;
+                        for(let c=0; c<12; c++) {
+                            html += `<th style="padding:4px 2px; border:1px solid #d8cfeb; width:4.16%;">Line No.</th><th style="padding:4px 2px; border:1px solid #d8cfeb; width:4.16%;">Wt (In gms)</th>`;
+                        }
+                        html += `       </tr>
+                                </thead>
+                                <tbody>
+                        `;
+                        for(let row=0; row<3; row++) {
+                            html += `<tr>`;
+                            for(let col=0; col<12; col++) {
+                                const idx = row * 12 + col;
+                                let wt = weights[idx] !== '' ? weights[idx] : '—';
+                                let displayWt = (wt !== '—' && !isNaN(wt)) ? parseFloat(wt).toFixed(2) : '—';
+                                let isBelow = (wt !== '—' && !isNaN(wt) && parseFloat(wt) < std);
+                                html += `<td style="border:1px solid #ddd; padding:4px 2px; text-align:center; font-weight:600;">${idx+1}</td>`;
+                                html += `<td style="border:1px solid #ddd; padding:4px 2px; text-align:center; ${isBelow ? (isBW ? 'background:#ffffff; color:#000000; font-weight:700; text-decoration:underline;' : 'background:#ffe0e0; color:#b13b2d; font-weight:700;') : ''}">${displayWt}</td>`;
+                            }
+                            html += `</tr>`;
+                        }
+                        html += `</tbody></table>`;
+                        return html;
+                    }
+
+                    
+function buildSectionHtml(sectionKey, title, icon, weightsArr, chartImg, headerColor) {
+                        const isBW = theme === 'bw';
+                        const std = getStandardWeight(sectionKey);
+                        const stats = computeStats(weightsArr);
+                        const below = getBelowStandardLines(weightsArr, std);
+                        const sides = getSideWeights(weightsArr);
+                        const variety = document.getElementById(`${sectionKey}Variety`).value || 'N/A';
+                        const biscuitWeight = document.getElementById(`${sectionKey}BiscuitWeight`).value || '-';
+                        const biscuitCount = document.getElementById(`${sectionKey}BiscuitCount`).value || '-';
+                        const ucl = document.getElementById(`${sectionKey}Ucl`).value || '-';
+                        const lcl = document.getElementById(`${sectionKey}Lcl`).value || '-';
+                        const remarks = document.getElementById(`${sectionKey}Remarks`).value || '—';
+                        const countLabel = sectionKey === 'oven' ? 'Biscuits/Round' : 'No. of Biscuits';
+
+                        return `
+                            <div style="margin-bottom:10px; border:1px solid #000000; border-radius:16px; padding:10px 12px; background:#fff; page-break-inside:avoid;">
+                                <div style="font-size:20px; font-weight:800; color:${isBW ? '#000000' : headerColor}; margin-bottom:8px;">${icon} ${title}</div>
+                                <div style="background:${isBW ? '#ffffff' : '#f5f0fe'}; border:1px solid #000000; border-radius:12px; padding:8px 10px; margin-bottom:10px;">
+                                    <div style="display:grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap:8px; font-size:12px; color:#222;">
+                                        <div style="border:1px solid #000000; border-radius:8px; padding:6px 8px; background:#ffffff; line-height:1.3; word-break:break-word;"><strong>Variety:</strong> ${escapeHtml(variety)}</div>
+                                        <div style="border:1px solid #000000; border-radius:8px; padding:6px 8px; background:#ffffff; line-height:1.3; word-break:break-word;"><strong>1 Biscuit Weight:</strong> ${escapeHtml(biscuitWeight)} g</div>
+                                        <div style="border:1px solid #000000; border-radius:8px; padding:6px 8px; background:#ffffff; line-height:1.3; word-break:break-word;"><strong>${countLabel}:</strong> ${escapeHtml(biscuitCount)}</div>
+                                        <div style="border:1px solid #000000; border-radius:8px; padding:6px 8px; background:#ffffff; line-height:1.3; word-break:break-word;"><strong>Standard Weight:</strong> ${std.toFixed(2)} g</div>
+                                        <div style="border:1px solid #000000; border-radius:8px; padding:6px 8px; background:#ffffff; line-height:1.3; word-break:break-word;"><strong>UCL/LCL:</strong> ${escapeHtml(ucl)} / ${escapeHtml(lcl)}</div>
+                                    </div>
+                                    <div style="display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:8px; font-size:12px; margin-top:8px; color:#222;">
+                                        <div style="border:1px solid #000000; border-radius:8px; padding:6px 8px; background:#ffffff; line-height:1.3; word-break:break-word;"><strong>Average Weight:</strong> ${stats.avg !== null ? stats.avg.toFixed(2)+' g' : '—'}</div>
+                                        <div style="border:1px solid #000000; border-radius:8px; padding:6px 8px; background:#ffffff; line-height:1.3; word-break:break-word;"><strong>Maximum Weight:</strong> ${stats.max !== null ? stats.max.toFixed(2)+' g (L'+stats.maxLine+')' : '—'}</div>
+                                        <div style="border:1px solid #000000; border-radius:8px; padding:6px 8px; background:#ffffff; line-height:1.3; word-break:break-word;"><strong>Minimum Weight:</strong> ${stats.min !== null ? stats.min.toFixed(2)+' g (L'+stats.minLine+')' : '—'}</div>
+                                        <div style="border:1px solid #000000; border-radius:8px; padding:6px 8px; background:#ffffff; line-height:1.3; word-break:break-word;"><strong>Range (Difference):</strong> ${stats.range !== null ? stats.range.toFixed(2)+' g' : '—'}</div>
+                                        <div style="border:1px solid #000000; border-radius:8px; padding:6px 8px; background:#ffffff; line-height:1.3; word-break:break-word;"><strong>Working Side Avg Weight:</strong> ${sides.working !== null ? sides.working.toFixed(2)+' g' : '—'}</div>
+                                        <div style="border:1px solid #000000; border-radius:8px; padding:6px 8px; background:#ffffff; line-height:1.3; word-break:break-word;"><strong>Non Working Side Avg Weight:</strong> ${sides.nonWorking !== null ? sides.nonWorking.toFixed(2)+' g' : '—'}</div>
+                                    </div>
+                                    ${below.length > 0
+                                        ? `<div style="margin-top:6px; font-size:11px; color:${isBW ? '#000000' : '#b13b2d'};"><strong>⚠ Underweight:</strong> ${below.map(b => `L${b.line} (${b.weight.toFixed(2)}g)`).join(', ')}</div>`
+                                        : `<div style="margin-top:6px; font-size:11px; color:#000000;"><strong>✓ No underweight lines</strong></div>`
+                                    }
+                                </div>
+
+                                <div style="border:1px solid #000000; border-radius:14px; padding:8px; background:#fff; margin-bottom:10px;">
+                                    <img src="${chartImg}" style="width:100%; height:250px; object-fit:contain; display:block;" />
+                                </div>
+
+                                ${buildReadingTable(weightsArr, std, headerColor)}
+
+                                <div style="margin-top:8px; background:${isBW ? '#ffffff' : '#faf7ff'}; border:1px solid #000000; border-radius:10px; padding:8px 10px; font-size:12px;">
+                                    <strong>📝 Remarks:</strong> ${escapeHtml(remarks) || '—'}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    const activeTab = document.querySelector('.tab-btn.active')?.dataset?.tab || 'oven';
+                    const activeConfigs = {
+                        oven: { filled: ovenFilled, title: 'OVEN SECTION', icon: '🔥', weights: ovenWeights, chart: ovenChartImg, color: '#9a86c4', key: 'oven' },
+                        stacker: { filled: stackerFilled, title: 'STACKER SECTION', icon: '📦', weights: stackerWeights, chart: stackerChartImg, color: '#8f7bbd', key: 'stacker' }
+                    };
+                    let selectedSection = activeConfigs[activeTab];
+                    if(!selectedSection || !selectedSection.filled) {
+                        selectedSection = ovenFilled ? activeConfigs.oven : activeConfigs.stacker;
+                    }
+
+                    const sections = [
+                        buildSectionHtml(
+                            selectedSection.key,
+                            selectedSection.title,
+                            selectedSection.icon,
+                            selectedSection.weights,
+                            selectedSection.chart,
+                            selectedSection.color
+                        )
+                    ];
+
+                    const fullHtml = `
+                        <div style="width:1123px; min-height:794px; margin:0 auto; background:#ffffff; font-family:'Segoe UI', Arial, sans-serif; padding:20px 24px 18px; box-sizing:border-box;">
+                            <div style="text-align:center; margin-bottom:12px; border-bottom:2px solid #000000; padding-bottom:10px;">
+                                <h1 style="color:#000000; margin:0; font-size:24px; line-height:1.25; font-weight:800;">Ambaji Foods (India) Private Limited, Kanpur</h1>
+                                <div style="color:#000000; font-size:18px; margin-top:2px; font-weight:800;">Process Parameter Line Weight Quality Report</div><div style="font-size:13px; color:#000000; margin-top:5px;">Version: 2.00 | Re-Issue Date: 01/04/26 | Document ID: AFIPL/PRD/FRM/20</div>
+                                <div style="font-size:14px; color:#000000; margin-top:5px;">Date: ${dateStr} &nbsp;&nbsp;|&nbsp;&nbsp; Shift: ${getDisplayShift()} &nbsp;&nbsp;|&nbsp;&nbsp; Time: ${timeStr}</div>
+                            </div>
+                            ${sections.join('')}
+                            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:14px; margin-top:10px; margin-bottom:8px;">
+                                <div style="border:1.5px solid #000000; border-radius:12px; height:62px; padding:8px 10px; display:flex; align-items:flex-end; justify-content:center; font-size:13px; font-weight:700; color:#000000;">Signature by Operator</div>
+                                <div style="border:1.5px solid #000000; border-radius:12px; height:62px; padding:8px 10px; display:flex; align-items:flex-end; justify-content:center; font-size:13px; font-weight:700; color:#000000;">Signature by Parle Officer</div>
+                                <div style="border:1.5px solid #000000; border-radius:12px; height:62px; padding:8px 10px; display:flex; align-items:flex-end; justify-content:center; font-size:13px; font-weight:700; color:#000000;">Signature by Production Manager</div>
+                            </div>
+                            <div style="text-align:center; margin-top:6px; padding-top:8px; border-top:1px solid #000000; font-size:11px; color:#000000;">
+                                <strong>Line Weight Report Management System By Prateek Agarwal</strong>
+                            </div>
+                        </div>
+                    `;
+
+                    container.style.width = '1123px';
+                    container.innerHTML = fullHtml;
+
+                    await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 400)));
+
+                    const canvas = await html2canvas(container.firstElementChild, {
+                        scale: 2,
+                        backgroundColor: '#ffffff',
+                        logging: false,
+                        useCORS: false,
+                        allowTaint: true,
+                        imageTimeout: 0,
+                        windowWidth: 1123,
+                        width: 1123,
+                        scrollX: 0,
+                        scrollY: 0
+                    });
+
+                    const blob = await new Promise((resolve, reject) => {
+                        canvas.toBlob((b) => b ? resolve(b) : reject(new Error('Image blob could not be created')), 'image/png', 1.0);
+                    });
+                    const imgData = canvas.toDataURL('image/png');
+                    const blobUrl = URL.createObjectURL(blob);
+
+                    if (shareImage && navigator.canShare) {
+                        try {
+                            const imageFile = new File([blob], fileName, { type: 'image/png' });
+                            if (navigator.canShare({ files: [imageFile] })) {
+                                await navigator.share({
+                                    files: [imageFile],
+                                    title: 'Ambaji Foods (India) Private Limited, Kanpur Quality Report',
+                                    text: 'Ambaji Foods (India) Private Limited, Kanpur quality report image'
+                                });
+                                showToast('✅ Image ready for sharing!', 2500);
+                                return { imgData, blobUrl, fileName, shared: true };
+                            }
+                        } catch (shareErr) {
+                            console.warn('Share failed, falling back to download/open', shareErr);
+                        }
+                    }
+
+                    if (downloadImage) {
+                        const link = document.createElement('a');
+                        link.download = fileName;
+                        link.href = blobUrl;
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+                        showToast('✅ Required-format A4 image downloaded!', 3000);
+                    }
+
+                    setTimeout(() => {
+                        try { URL.revokeObjectURL(blobUrl); } catch (_) {}
+                    }, 5000);
+                    return { imgData, blobUrl, fileName, shared: false, blob };
+                } catch(e) {
+                    console.error(e);
+                    showToast('Error generating report', 3000);
+                    return null;
+                } finally {
+                    modal.style.display = 'none';
+                }
+            }
+
+            function generateTextReport() {
+                const ovenFilled = isSectionFilled(ovenWeights);
+                const stackerFilled = isSectionFilled(stackerWeights);
+
+                function getDisplayDate() {
+                    return normalizeDateDisplay(document.getElementById('ovenDate').value) || normalizeDateDisplay(document.getElementById('stackerDate').value) || normalizeDateDisplay(new Date().toISOString().split('T')[0]);
+                }
+
+
+                
+function formatSectionReport(sectionKey, title, emoji, weightsArr) {
+                    const std = getStandardWeight(sectionKey);
+                    const below = getBelowStandardLines(weightsArr, std);
+                    const stats = computeStats(weightsArr);
+                    const sides = getSideWeights(weightsArr);
+                    const biscuitWeight = document.getElementById(`${sectionKey}BiscuitWeight`).value || '-';
+                    const biscuitCount = document.getElementById(`${sectionKey}BiscuitCount`).value || '-';
+                    const ucl = document.getElementById(`${sectionKey}Ucl`).value || '-';
+                    const lcl = document.getElementById(`${sectionKey}Lcl`).value || '-';
+                    const variety = document.getElementById(`${sectionKey}Variety`).value || 'N/A';
+                    const shift = document.getElementById(`${sectionKey}Shift`).value || '—';
+                    const remarks = document.getElementById(`${sectionKey}Remarks`).value || '—';
+                    const countLabel = sectionKey === 'oven' ? 'Biscuits/Round' : 'No. of Biscuits';
+                    const maxText = stats.max !== null ? `${stats.max.toFixed(2)} g (Line ${stats.maxLine})` : '—';
+                    const minText = stats.min !== null ? `${stats.min.toFixed(2)} g (Line ${stats.minLine})` : '—';
+                    const belowText = below.length
+                        ? below.map(item => `Line ${item.line} (${item.weight.toFixed(2)}g)`).join(', ')
+                        : 'None';
+
+                    return `${emoji} ${title} (Variety: ${variety})
+`
+                        + `• Shift: ${shift}
+`
+                        + `• 1 Biscuit Weight: ${biscuitWeight} g | ${countLabel}: ${biscuitCount}
+`
+                        + `• Standard Weight: ${std.toFixed(2)} g
+`
+                        + `• UCL / LCL: ${ucl} / ${lcl} g
+`
+                        + `• Average Weight: ${stats.avg !== null ? stats.avg.toFixed(2)+' g' : '—'}
+`
+                        + `• Maximum Weight: ${maxText}
+`
+                        + `• Minimum Weight: ${minText}
+`
+                        + `• Range (Difference): ${stats.range !== null ? stats.range.toFixed(2)+' g' : '—'}
+`
+                        + `• Working Side Avg Weight (First 16 Lines): ${sides.working !== null ? sides.working.toFixed(2)+' g' : '—'}
+`
+                        + `• Non Working Side Avg Weight (Last 16 Lines): ${sides.nonWorking !== null ? sides.nonWorking.toFixed(2)+' g' : '—'}
+`
+                        + `📌 Underweight: ${belowText}
+`
+                        + `📝 Remarks: ${remarks}
+
+`;
+                }
+
+                let report = `🏭 *AMBAJI FOODS (INDIA) PRIVATE LIMITED, KANPUR - LINE WEIGHT REPORT MANAGEMENT SYSTEM* 🍪
+
+📅 Date: ${getDisplayDate()} | 🌗 Shift: ${getDisplayShift()} | ⏰ Time: ${document.getElementById('ovenTimeDisplay').innerText || document.getElementById('stackerTimeDisplay').innerText || '--:--:--'}
+─────────────────────────────
+`;
+
+                if (ovenFilled) {
+                    report += formatSectionReport('oven', 'OVEN SECTION', '🔥', ovenWeights);
+                }
+                if (stackerFilled) {
+                    report += formatSectionReport('stacker', 'STACKER SECTION', '📦', stackerWeights);
+                }
+
+                report += `Line Weight Report Management System By Prateek Agarwal`;
+                return report;
+            }
+            
+            document.getElementById('whatsappTextBtn').onclick = () => {
+                const text = generateTextReport();
+                window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+            };
+            document.getElementById('whatsappImageBtn').onclick = async () => {
+                await generateA4ReportImage({ theme: 'color' });
+                const textSummary = generateTextReport();
+                setTimeout(() => {
+                    window.open(`https://wa.me/?text=${encodeURIComponent("📸 *Ambaji Foods (India) Private Limited, Kanpur - Quality Report Image Attached*\n\nImage downloaded. Summary:\n\n" + textSummary)}`, '_blank');
+                }, 800);
+            };
+            document.getElementById('exportPdfBtn').onclick = async () => {
+                try {
+                    const result = await generateA4ReportImage({ downloadImage: false, theme: 'bw' });
+                    if (!result || !result.imgData) return;
+
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({
+                        orientation: 'landscape',
+                        unit: 'mm',
+                        format: 'a4',
+                        compress: true
+                    });
+
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+                    pdf.addImage(result.imgData, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
+                    const pdfName = (result.fileName || 'AFIPL_Line_Weight_Report.png').replace(/\.png$/i, '.pdf');
+                    pdf.save(pdfName);
+                    showToast('✅ High-quality PDF downloaded!', 3000);
+                } catch (err) {
+                    console.error(err);
+                    showToast('Error generating PDF', 3000);
+                }
+            };
+            document.getElementById('exportExcelBtn').onclick = () => {
+                const ovenStdVal = getStandardWeight('oven');
+                const stackerStdVal = getStandardWeight('stacker');
+                const ovenDataFull = [['Line No.', 'Weight (g)', 'Underweight?']];
+                for(let i=0;i<TOTAL_LINES;i++) {
+                    let wt = ovenWeights[i] !== '' ? ovenWeights[i] : '';
+                    let isBelow = (wt !== '' && !isNaN(wt) && parseFloat(wt) < ovenStdVal);
+                    ovenDataFull.push([i+1, wt, isBelow ? 'YES' : 'No']);
+                }
+                const stackerDataFull = [['Line No.', 'Weight (g)', 'Underweight?']];
+                for(let i=0;i<TOTAL_LINES;i++) {
+                    let wt = stackerWeights[i] !== '' ? stackerWeights[i] : '';
+                    let isBelow = (wt !== '' && !isNaN(wt) && parseFloat(wt) < stackerStdVal);
+                    stackerDataFull.push([i+1, wt, isBelow ? 'YES' : 'No']);
+                }
+                const wb = XLSX.utils.book_new();
+                if(isSectionFilled(ovenWeights)) XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(ovenDataFull), 'Oven Section');
+                if(isSectionFilled(stackerWeights)) XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(stackerDataFull), 'Stacker Section');
+                XLSX.writeFile(wb, `Ambaji_Foods_Report_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.xlsx`);
+                showToast('📊 Excel report generated!', 2500);
+            };
+            
+            renderTable('oven'); renderTable('stacker'); initCharts(); updateOven(); updateStacker();
+        }
+        
+        initializeApp();
+    </script>
+</body>
+</html>
