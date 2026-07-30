@@ -58,10 +58,12 @@ function sheet_() {
   let sheet = book.getSheetByName(DATA_SHEET);
   if (!sheet) {
     sheet = book.insertSheet(DATA_SHEET);
-    sheet.appendRow(["Record ID", "Form ID", "Document ID", "Form Data", "Created At", "Updated At", "Image URL"]);
+    sheet.appendRow(["Record ID", "Form ID", "Document ID", "Form Data", "Created At", "Updated At", "Image URL", "PDF URL", "Approval Status"]);
     sheet.setFrozenRows(1);
-    sheet.getRange(1, 1, 1, 7).setBackground("#174B3A").setFontColor("#FFFFFF").setFontWeight("bold");
   }
+  if (sheet.getMaxColumns() < 9) sheet.insertColumnsAfter(sheet.getMaxColumns(), 9 - sheet.getMaxColumns());
+  sheet.getRange(1, 1, 1, 9).setValues([["Record ID", "Form ID", "Document ID", "Form Data", "Created At", "Updated At", "Image URL", "PDF URL", "Approval Status"]]);
+  sheet.getRange(1, 1, 1, 9).setBackground("#174B3A").setFontColor("#FFFFFF").setFontWeight("bold");
   return sheet;
 }
 
@@ -69,44 +71,137 @@ function listRecords_() {
   const sheet = sheet_();
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return [];
-  return sheet.getRange(2, 1, lastRow - 1, 7).getValues().filter(row => row[0]).map(row => ({
+  return sheet.getRange(2, 1, lastRow - 1, 9).getValues().filter(row => row[0]).map(row => ({
     id: String(row[0]),
     formId: String(row[1]),
     docId: String(row[2]),
     data: JSON.parse(String(row[3] || "{}")),
     createdAt: String(row[4] || ""),
     updatedAt: String(row[5] || ""),
-    imageUrl: String(row[6] || "")
+    imageUrl: String(row[6] || ""),
+    pdfUrl: String(row[7] || ""),
+    approvalStatus: String(row[8] || "pending")
   }));
 }
 
 function upsertRecord_(record) {
   if (!record || !record.id) throw new Error("Record ID is required.");
+  record.data = record.data || {};
+  record.data.approvalStatus = String(record.data.approvalStatus || "pending").toLowerCase();
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
+  let targetRow;
+  let existingPdf = "";
   try {
     const sheet = sheet_();
     const lastRow = sheet.getLastRow();
-    let targetRow = lastRow + 1;
+    targetRow = lastRow + 1;
     if (lastRow >= 2) {
       const ids = sheet.getRange(2, 1, lastRow - 1, 1).getDisplayValues().flat();
       const index = ids.indexOf(String(record.id));
       if (index >= 0) targetRow = index + 2;
     }
     const existingImage = targetRow <= lastRow ? sheet.getRange(targetRow, 7).getValue() : "";
-    sheet.getRange(targetRow, 1, 1, 7).setValues([[
+    existingPdf = targetRow <= lastRow ? sheet.getRange(targetRow, 8).getValue() : "";
+    sheet.getRange(targetRow, 1, 1, 9).setValues([[
       record.id,
       record.formId || "",
       record.docId || "",
-      JSON.stringify(record.data || {}),
+      JSON.stringify(record.data),
       record.createdAt || new Date().toISOString(),
       record.updatedAt || new Date().toISOString(),
-      existingImage
+      existingImage,
+      existingPdf,
+      record.data.approvalStatus
     ]]);
   } finally {
     lock.releaseLock();
   }
-  if (record.formId === "line-weight-control") notifyApprovalTeam_(record);
+  const pdfUrl = createRecordPdf_(record, record.data.approvalStatus);
+  const sheet = sheet_();
+  sheet.getRange(targetRow, 8).setValue(pdfUrl);
+  sheet.getRange(targetRow, 9).setValue(record.data.approvalStatus);
+  if (existingPdf && existingPdf !== pdfUrl) trashFileByUrl_(existingPdf);
+}
+
+function statusLabel_(status) {
+  const value = String(status || "pending").toLowerCase();
+  if (value === "approved") return "Approved";
+  if (value === "rejected") return "Rejected";
+  return "Pending";
+}
+
+function safeFilePart_(value) {
+  return String(value || "Form").replace(/[\\/:*?"<>|#%{}[\]]/g, "_").replace(/\s+/g, " ").trim().slice(0, 90);
+}
+
+function childFolder_(parent, name) {
+  const folders = parent.getFoldersByName(name);
+  return folders.hasNext() ? folders.next() : parent.createFolder(name);
+}
+
+function recordFolder_(status, formId) {
+  const root = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+  const statusFolderName = String(status || "").toLowerCase() === "rejected" ? "Reject" : statusLabel_(status);
+  const statusFolder = childFolder_(root, statusFolderName);
+  return childFolder_(statusFolder, safeFilePart_(formId || "General Forms"));
+}
+
+function displayValue_(value) {
+  if (Array.isArray(value)) return value.filter(item => item !== "" && item != null).join(", ");
+  if (value && typeof value === "object") return "";
+  return String(value == null || value === "" ? "—" : value);
+}
+
+function createRecordPdf_(record, status) {
+  const statusText = statusLabel_(status);
+  const formName = safeFilePart_(record.formId || "Ambaji Foods Form");
+  const docNumber = String(record.docId || "—");
+  const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || "Asia/Kolkata", "dd-MMM-yyyy HH:mm:ss");
+  const fileName = statusText.toUpperCase() + "_" + formName + "_" + safeFilePart_(record.id) + ".pdf";
+  const document = DocumentApp.create(fileName.replace(/\.pdf$/i, ""));
+  const body = document.getBody();
+  body.clear();
+  const company = body.appendParagraph("Ambaji Foods (India) Private Limited, Kanpur");
+  company.setHeading(DocumentApp.ParagraphHeading.HEADING1).setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+  const formTitle = body.appendParagraph(formName);
+  formTitle.setHeading(DocumentApp.ParagraphHeading.HEADING2).setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+  const statusParagraph = body.appendParagraph("STATUS: " + statusText.toUpperCase());
+  statusParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+  statusParagraph.editAsText().setBold(true).setFontSize(18)
+    .setForegroundColor(statusText === "Approved" ? "#168A45" : statusText === "Rejected" ? "#A1261D" : "#9A6500");
+  body.appendParagraph("Document ID: " + docNumber);
+  body.appendParagraph("Record ID: " + String(record.id || "—"));
+  body.appendParagraph("Generated: " + timestamp);
+  body.appendHorizontalRule();
+  const rows = [["Field", "Finding / Value"]];
+  const internalKeys = {approvals:true, approvalStatus:true, submittedAt:true, rejectedAt:true};
+  Object.keys(record.data || {}).forEach(key => {
+    if (internalKeys[key]) return;
+    const value = displayValue_(record.data[key]);
+    if (value) rows.push([String(key).replace(/([A-Z])/g, " $1").replace(/^./, char => char.toUpperCase()), value]);
+  });
+  const table = body.appendTable(rows);
+  table.getRow(0).getCell(0).editAsText().setBold(true);
+  table.getRow(0).getCell(1).editAsText().setBold(true);
+  body.appendHorizontalRule();
+  const approvals = (record.data || {}).approvals || {};
+  body.appendParagraph("Production approval: " + statusLabel_((approvals.production || {}).status));
+  body.appendParagraph("Parle approval: " + statusLabel_((approvals.parle || {}).status));
+  const footer = body.appendParagraph("Apps By Prateek Agarwal");
+  footer.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+  footer.editAsText().setBold(true);
+  document.saveAndClose();
+  const source = DriveApp.getFileById(document.getId());
+  const pdf = recordFolder_(status, formName).createFile(source.getBlob().getAs(MimeType.PDF).setName(fileName));
+  source.setTrashed(true);
+  return pdf.getUrl();
+}
+
+function trashFileByUrl_(url) {
+  const match = String(url || "").match(/[-\w]{25,}/);
+  if (!match) return;
+  try { DriveApp.getFileById(match[0]).setTrashed(true); } catch (error) {}
 }
 
 function notifyApprovalTeam_(record) {
@@ -224,6 +319,21 @@ function recordApproval_(id, role, decision, token) {
           }
           sheet.getRange(row, 4).setValue(JSON.stringify(data));
           sheet.getRange(row, 6).setValue(new Date().toISOString());
+          sheet.getRange(row, 9).setValue(data.approvalStatus);
+          if (data.approvalStatus === "approved" || data.approvalStatus === "rejected") {
+            const oldPdf = String(sheet.getRange(row, 8).getValue() || "");
+            const finalRecord = {
+              id: String(sheet.getRange(row, 1).getValue() || id),
+              formId: String(sheet.getRange(row, 2).getValue() || "form"),
+              docId: String(sheet.getRange(row, 3).getValue() || ""),
+              data: data,
+              createdAt: String(sheet.getRange(row, 5).getValue() || ""),
+              updatedAt: new Date().toISOString()
+            };
+            const finalPdf = createRecordPdf_(finalRecord, data.approvalStatus);
+            sheet.getRange(row, 8).setValue(finalPdf);
+            if (oldPdf && oldPdf !== finalPdf) trashFileByUrl_(oldPdf);
+          }
           return true;
         }
       }
@@ -250,10 +360,9 @@ function deleteRecord_(id) {
 
 function uploadImage_(params) {
   if (!params.base64 || !params.fileName) throw new Error("Image data is required.");
-  const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-  const bytes = Utilities.base64Decode(params.base64);
-  const blob = Utilities.newBlob(bytes, params.mimeType || "image/png", params.fileName);
-  const file = folder.createFile(blob);
+  let status = "pending";
+  let formId = "General Forms";
+  let row = 0;
   const id = String(params.recordId || "");
   if (id) {
     const sheet = sheet_();
@@ -261,8 +370,19 @@ function uploadImage_(params) {
     if (lastRow >= 2) {
       const ids = sheet.getRange(2, 1, lastRow - 1, 1).getDisplayValues().flat();
       const index = ids.indexOf(id);
-      if (index >= 0) sheet.getRange(index + 2, 7).setValue(file.getUrl());
+      if (index >= 0) {
+        row = index + 2;
+        formId = String(sheet.getRange(row, 2).getValue() || formId);
+        const data = JSON.parse(String(sheet.getRange(row, 4).getValue() || "{}"));
+        status = String(data.approvalStatus || "pending");
+      }
     }
   }
+  const folder = recordFolder_(status, formId);
+  const bytes = Utilities.base64Decode(params.base64);
+  const stampedName = statusLabel_(status).toUpperCase() + "_" + safeFilePart_(params.fileName);
+  const blob = Utilities.newBlob(bytes, params.mimeType || "image/png", stampedName);
+  const file = folder.createFile(blob);
+  if (row) sheet_().getRange(row, 7).setValue(file.getUrl());
   return file.getUrl();
 }
