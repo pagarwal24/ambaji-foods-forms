@@ -3,7 +3,22 @@ const DRIVE_FOLDER_ID = "1qw3s0QLr6eM190eBcCjQFlcGwmQ5AgYG";
 const DATA_SHEET = "Form Records";
 
 function doGet(e) {
-  const action = String((e && e.parameter && e.parameter.action) || "list");
+  const params = (e && e.parameter) || {};
+  if (params.a) {
+    try {
+      const decoded = Utilities.newBlob(Utilities.base64DecodeWebSafe(String(params.a))).getDataAsString();
+      const approval = JSON.parse(decoded);
+      return handleApproval_(
+        String(approval.id || ""),
+        String(approval.role || ""),
+        String(approval.decision || ""),
+        String(approval.token || "")
+      );
+    } catch (error) {
+      return handleApproval_("", "", "", "");
+    }
+  }
+  const action = String(params.action || "list");
   if (action === "approval") {
     return handleApproval_(
       String(e.parameter.id || ""),
