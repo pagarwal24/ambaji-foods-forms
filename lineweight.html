@@ -509,6 +509,17 @@
             text-decoration: none;
         }
         .back-home:hover { background: #45aaff2b; }
+        .drive-status {
+            display: inline-flex;
+            margin-left: 10px;
+            padding: 9px 14px;
+            border: 1px solid #42e98a66;
+            border-radius: 999px;
+            background: #21bd651c;
+            color: #8fffc0;
+            font-size: 0.8rem;
+            font-weight: 800;
+        }
         .brand-header, .sheet, .report-options {
             background: linear-gradient(145deg, #101d3d, #0c1632);
             border-color: #4abfff45;
@@ -559,6 +570,7 @@
     <div id="appContent" class="app-content">
         <div class="main-container">
             <a class="back-home" href="index.html">← Ambaji Foods Form Selector</a>
+            <span class="drive-status" id="driveStatus">Google Drive connected</span>
             <div class="brand-header">
                 <h1>Ambaji Foods (India) Private Limited, Kanpur</h1>
                 <div>Process Parameter Line Weight Quality Report</div>
@@ -965,8 +977,107 @@
             document.getElementById('resetOvenBtn').onclick = () => { ovenWeights.fill(''); renderTable('oven'); updateOven(); document.getElementById('ovenFilledBy').value=''; document.getElementById('ovenVariety').value=''; document.getElementById('ovenRemarks').value=''; };
             document.getElementById('resetStackerBtn').onclick = () => { stackerWeights.fill(''); renderTable('stacker'); updateStacker(); document.getElementById('stackerFilledBy').value=''; document.getElementById('stackerVariety').value=''; document.getElementById('stackerRemarks').value=''; };
             document.getElementById('globalResetBtn').onclick = () => { ovenWeights.fill(''); stackerWeights.fill(''); renderTable('oven'); renderTable('stacker'); updateOven(); updateStacker(); };
-            document.getElementById('saveSessionBtn').onclick = () => { localStorage.setItem('ambajiQC_full', JSON.stringify({ ovenWeights, stackerWeights, ovenFilledBy:document.getElementById('ovenFilledBy').value, ovenVariety:document.getElementById('ovenVariety').value, ovenRemarks:document.getElementById('ovenRemarks').value, ovenBiscuitWeight:document.getElementById('ovenBiscuitWeight').value, ovenBiscuitCount:document.getElementById('ovenBiscuitCount').value, ovenUcl:document.getElementById('ovenUcl').value, ovenLcl:document.getElementById('ovenLcl').value, ovenDate:document.getElementById('ovenDate').value, ovenShift:document.getElementById('ovenShift').value, stackerFilledBy:document.getElementById('stackerFilledBy').value, stackerVariety:document.getElementById('stackerVariety').value, stackerRemarks:document.getElementById('stackerRemarks').value, stackerBiscuitWeight:document.getElementById('stackerBiscuitWeight').value, stackerBiscuitCount:document.getElementById('stackerBiscuitCount').value, stackerUcl:document.getElementById('stackerUcl').value, stackerLcl:document.getElementById('stackerLcl').value, stackerDate:document.getElementById('stackerDate').value, stackerShift:document.getElementById('stackerShift').value })); showToast('✅ Session saved'); };
-            document.getElementById('loadSessionBtn').onclick = () => { let d = localStorage.getItem('ambajiQC_full'); if(!d) { showToast('No saved session'); return; } let s = JSON.parse(d); if(s.ovenWeights) { ovenWeights = s.ovenWeights; renderTable('oven'); } if(s.stackerWeights) { stackerWeights = s.stackerWeights; renderTable('stacker'); } document.getElementById('ovenFilledBy').value = s.ovenFilledBy||''; document.getElementById('ovenVariety').value = s.ovenVariety||''; document.getElementById('ovenRemarks').value = s.ovenRemarks||''; document.getElementById('ovenBiscuitWeight').value = s.ovenBiscuitWeight||5; document.getElementById('ovenBiscuitCount').value = s.ovenBiscuitCount||12; document.getElementById('ovenUcl').value = s.ovenUcl||''; document.getElementById('ovenLcl').value = s.ovenLcl||''; document.getElementById('ovenDate').value = s.ovenDate||today; document.getElementById('ovenShift').value = s.ovenShift||''; document.getElementById('stackerFilledBy').value = s.stackerFilledBy||''; document.getElementById('stackerVariety').value = s.stackerVariety||''; document.getElementById('stackerRemarks').value = s.stackerRemarks||''; document.getElementById('stackerBiscuitWeight').value = s.stackerBiscuitWeight||5; document.getElementById('stackerBiscuitCount').value = s.stackerBiscuitCount||16; document.getElementById('stackerUcl').value = s.stackerUcl||''; document.getElementById('stackerLcl').value = s.stackerLcl||''; document.getElementById('stackerDate').value = s.stackerDate||today; document.getElementById('stackerShift').value = s.stackerShift||''; updateOven(); updateStacker(); showToast('📀 Session loaded'); };
+            const CLOUD_URL = 'https://script.google.com/macros/s/AKfycbyi8DlI-5tHZUy8wOW35CJFpH65bsDU6Vx-H_ceNsGl5RzjvXAprYmWHXbB4G31PDw0/exec';
+            function collectSessionData() {
+                return {
+                    ovenWeights, stackerWeights,
+                    ovenFilledBy:document.getElementById('ovenFilledBy').value,
+                    ovenVariety:document.getElementById('ovenVariety').value,
+                    ovenRemarks:document.getElementById('ovenRemarks').value,
+                    ovenBiscuitWeight:document.getElementById('ovenBiscuitWeight').value,
+                    ovenBiscuitCount:document.getElementById('ovenBiscuitCount').value,
+                    ovenUcl:document.getElementById('ovenUcl').value,
+                    ovenLcl:document.getElementById('ovenLcl').value,
+                    ovenDate:document.getElementById('ovenDate').value,
+                    ovenShift:document.getElementById('ovenShift').value,
+                    stackerFilledBy:document.getElementById('stackerFilledBy').value,
+                    stackerVariety:document.getElementById('stackerVariety').value,
+                    stackerRemarks:document.getElementById('stackerRemarks').value,
+                    stackerBiscuitWeight:document.getElementById('stackerBiscuitWeight').value,
+                    stackerBiscuitCount:document.getElementById('stackerBiscuitCount').value,
+                    stackerUcl:document.getElementById('stackerUcl').value,
+                    stackerLcl:document.getElementById('stackerLcl').value,
+                    stackerDate:document.getElementById('stackerDate').value,
+                    stackerShift:document.getElementById('stackerShift').value
+                };
+            }
+            function applySessionData(s) {
+                if(s.ovenWeights) { ovenWeights = s.ovenWeights; renderTable('oven'); }
+                if(s.stackerWeights) { stackerWeights = s.stackerWeights; renderTable('stacker'); }
+                document.getElementById('ovenFilledBy').value = s.ovenFilledBy||'';
+                document.getElementById('ovenVariety').value = s.ovenVariety||'';
+                document.getElementById('ovenRemarks').value = s.ovenRemarks||'';
+                document.getElementById('ovenBiscuitWeight').value = s.ovenBiscuitWeight||5;
+                document.getElementById('ovenBiscuitCount').value = s.ovenBiscuitCount||12;
+                document.getElementById('ovenUcl').value = s.ovenUcl||'';
+                document.getElementById('ovenLcl').value = s.ovenLcl||'';
+                document.getElementById('ovenDate').value = s.ovenDate||today;
+                document.getElementById('ovenShift').value = s.ovenShift||'';
+                document.getElementById('stackerFilledBy').value = s.stackerFilledBy||'';
+                document.getElementById('stackerVariety').value = s.stackerVariety||'';
+                document.getElementById('stackerRemarks').value = s.stackerRemarks||'';
+                document.getElementById('stackerBiscuitWeight').value = s.stackerBiscuitWeight||5;
+                document.getElementById('stackerBiscuitCount').value = s.stackerBiscuitCount||16;
+                document.getElementById('stackerUcl').value = s.stackerUcl||'';
+                document.getElementById('stackerLcl').value = s.stackerLcl||'';
+                document.getElementById('stackerDate').value = s.stackerDate||today;
+                document.getElementById('stackerShift').value = s.stackerShift||'';
+                updateOven(); updateStacker();
+            }
+            function loadDriveRecords() {
+                return new Promise((resolve,reject) => {
+                    const callback = 'ambajiLineWeight_' + Date.now();
+                    const script = document.createElement('script');
+                    const timer = setTimeout(() => { cleanup(); reject(new Error('Google Drive request timed out')); }, 15000);
+                    function cleanup() { clearTimeout(timer); delete window[callback]; script.remove(); }
+                    window[callback] = data => { cleanup(); resolve(Array.isArray(data) ? data : []); };
+                    script.onerror = () => { cleanup(); reject(new Error('Unable to reach Google Drive')); };
+                    script.src = CLOUD_URL + '?action=list&callback=' + callback;
+                    document.head.appendChild(script);
+                });
+            }
+            document.getElementById('saveSessionBtn').onclick = async () => {
+                const button = document.getElementById('saveSessionBtn');
+                const session = collectSessionData();
+                localStorage.setItem('ambajiQC_full', JSON.stringify(session));
+                button.disabled = true;
+                button.textContent = 'Saving to Drive…';
+                document.getElementById('driveStatus').textContent = 'Saving to Google Drive…';
+                try {
+                    const now = new Date().toISOString();
+                    const record = {id:'lineweight-session-latest',formId:'line-weight-control',docId:'AFIPL/PRD/FRM/20',data:session,createdAt:now,updatedAt:now};
+                    await fetch(CLOUD_URL,{method:'POST',mode:'no-cors',body:new URLSearchParams({action:'upsert',record:JSON.stringify(record)})});
+                    document.getElementById('driveStatus').textContent = 'Saved to Google Drive';
+                    showToast('✅ Session saved to Google Drive');
+                } catch (error) {
+                    document.getElementById('driveStatus').textContent = 'Drive unavailable · browser backup saved';
+                    showToast('Browser backup saved; Drive could not be reached');
+                } finally {
+                    button.disabled = false;
+                    button.textContent = '💾 Save Session';
+                }
+            };
+            document.getElementById('loadSessionBtn').onclick = async () => {
+                const button = document.getElementById('loadSessionBtn');
+                button.disabled = true;
+                button.textContent = 'Loading from Drive…';
+                try {
+                    const records = await loadDriveRecords();
+                    const record = records.filter(r => r.formId === 'line-weight-control').sort((a,b) => String(b.updatedAt).localeCompare(String(a.updatedAt)))[0];
+                    if (!record || !record.data) throw new Error('No Drive session');
+                    applySessionData(record.data);
+                    localStorage.setItem('ambajiQC_full', JSON.stringify(record.data));
+                    document.getElementById('driveStatus').textContent = 'Loaded from Google Drive';
+                    showToast('📀 Session loaded from Google Drive');
+                } catch (error) {
+                    const local = localStorage.getItem('ambajiQC_full');
+                    if (!local) showToast('No saved session found');
+                    else { applySessionData(JSON.parse(local)); showToast('📀 Browser backup loaded'); }
+                } finally {
+                    button.disabled = false;
+                    button.textContent = '📂 Load Session';
+                }
+            };
             
             document.getElementById('ovenUcl').addEventListener('input', updateOven);
             document.getElementById('ovenLcl').addEventListener('input', updateOven);
