@@ -1541,7 +1541,7 @@ function buildSectionHtml(sectionKey, title, icon, weightsArr, chartImg, headerC
                                 <div style="border:1.5px solid ${approvalState.production?.status==='approved'?'#d6a84b':'#000000'}; border-radius:12px; min-height:62px; padding:8px 10px; text-align:center; font-size:12px; color:#000000; background:${approvalState.production?.status==='approved'?'#fff4d6':'#ffffff'};"><strong>Production Manager</strong><br>${approvalState.production?.status==='approved'?escapeHtml(approvalState.production?.name||document.getElementById('productionName').value||'Production Manager')+(approvalState.production?.signedAt?`<br>${escapeHtml(approvalDateTime(approvalState.production.signedAt))}`:''):''}</div>
                             </div>
                             <div style="text-align:center; margin-top:6px; padding-top:8px; border-top:1px solid #000000; font-size:11px; color:#000000;">
-                                <strong>Line Weight Report Management System By Prateek Agarwal</strong>
+                                <strong>Apps By Prateek Agarwal</strong>
                             </div>
                         </div>
                     `;
