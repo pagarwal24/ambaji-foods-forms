@@ -211,6 +211,17 @@ function recordApproval_(id, role, decision, token) {
           approval.signedAt = new Date().toISOString();
           approvals[role] = approval;
           data.approvals = approvals;
+          const productionStatus = String((approvals.production || {}).status || "pending");
+          const parleStatus = String((approvals.parle || {}).status || "pending");
+          if (productionStatus === "rejected" || parleStatus === "rejected") {
+            data.approvalStatus = "rejected";
+            data.rejectedAt = new Date().toISOString();
+          } else if (productionStatus === "approved" && parleStatus === "approved") {
+            data.approvalStatus = "approved";
+            data.submittedAt = new Date().toISOString();
+          } else {
+            data.approvalStatus = "pending";
+          }
           sheet.getRange(row, 4).setValue(JSON.stringify(data));
           sheet.getRange(row, 6).setValue(new Date().toISOString());
           return true;
