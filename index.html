@@ -148,7 +148,7 @@
     const selectOptions={shift:["","A","B","C","General"],boxStamping:["","Pass","Hold","Reject"],boxTaping:["","Pass","Hold","Reject"],partitions:["","Pass","Hold","Reject"],polybagSealing:["","Pass","Hold","Reject"],packetSealing:["","Pass","Hold","Reject"],appearance:["","Pass","Hold","Reject"],material:["","Water","RBD","Maida","Invert Syrup","Ground Sugar","Dough","Biscuit","Recycle Biscuit"],frequency:["","Daily","Weekly","Fortnightly","Monthly","Quarterly"],standard:["","4.0 pH","7.0 pH","9.2 pH"],plant:["","Plant 1","Plant 2"],status:["","Passed","Hold","Rejected"]};
 const CLOUD_URL="https://script.google.com/macros/s/AKfycbyi8DlI-5tHZUy8wOW35CJFpH65bsDU6Vx-H_ceNsGl5RzjvXAprYmWHXbB4G31PDw0/exec";
     let recordsCache=[],current=forms[0],editing=null,pendingApprovalRecord=null; const $=s=>document.querySelector(s);
-    const APPROVAL_PAGE=CLOUD_URL;
+    const APPROVAL_PAGE="https://pagarwal24.github.io/ambaji-foods-forms/approval.html";
     const APPROVAL_MOBILES={production:"919838654270",parle:"919795500700"};
     const load=()=>recordsCache;
     function cloudReady(){return CLOUD_URL.startsWith("https://script.google.com/")}
