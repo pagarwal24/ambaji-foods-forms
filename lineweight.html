@@ -1220,9 +1220,13 @@
                     const records = await loadDriveRecords();
                     const record = records.filter(r => r.formId === 'line-weight-control').sort((a,b) => String(b.updatedAt).localeCompare(String(a.updatedAt)))[0];
                     if (!record || !record.data) throw new Error('No Drive session');
-                    applySessionData(record.data);
-                    localStorage.setItem('ambajiQC_full', JSON.stringify(record.data));
-                    const finalStatus = record.data.approvalStatus || overallApprovalStatus();
+                    const approvedSession = {
+                        ...record.data,
+                        approvalStatus:record.approvalStatus || record.data.approvalStatus || 'pending'
+                    };
+                    applySessionData(approvedSession);
+                    localStorage.setItem('ambajiQC_full', JSON.stringify(approvedSession));
+                    const finalStatus = approvedSession.approvalStatus || overallApprovalStatus();
                     if (finalStatus === 'approved' || finalStatus === 'rejected') {
                         document.getElementById('driveStatus').textContent = 'Updating final approved report…';
                         const finalReport = await generateA4ReportImage({downloadImage:false,shareImage:false,theme:'color'});
