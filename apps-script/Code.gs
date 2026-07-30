@@ -117,11 +117,8 @@ function upsertRecord_(record) {
   } finally {
     lock.releaseLock();
   }
-  const pdfUrl = createRecordPdf_(record, record.data.approvalStatus);
   const sheet = sheet_();
-  sheet.getRange(targetRow, 8).setValue(pdfUrl);
   sheet.getRange(targetRow, 9).setValue(record.data.approvalStatus);
-  if (existingPdf && existingPdf !== pdfUrl) trashFileByUrl_(existingPdf);
 }
 
 function statusLabel_(status) {
@@ -196,6 +193,42 @@ function createRecordPdf_(record, status) {
   const pdf = recordFolder_(status, formName).createFile(source.getBlob().getAs(MimeType.PDF).setName(fileName));
   source.setTrashed(true);
   return pdf.getUrl();
+}
+
+function createImagePdf_(record, status, imageBlob) {
+  const statusText = statusLabel_(status);
+  const formName = safeFilePart_(record.formId || "Ambaji Foods Form");
+  const fileName = statusText.toUpperCase() + "_" + formName + "_" + safeFilePart_(record.id) + ".pdf";
+  const document = DocumentApp.create(fileName.replace(/\.pdf$/i, ""));
+  const body = document.getBody();
+  body.clear();
+  body.setMarginTop(18).setMarginBottom(18).setMarginLeft(18).setMarginRight(18);
+  const statusParagraph = body.appendParagraph("STATUS: " + statusText.toUpperCase());
+  statusParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+  statusParagraph.editAsText().setBold(true).setFontSize(18)
+    .setForegroundColor(statusText === "Approved" ? "#168A45" : statusText === "Rejected" ? "#A1261D" : "#9A6500");
+  const imageParagraph = body.appendParagraph("");
+  imageParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+  const image = imageParagraph.appendInlineImage(imageBlob);
+  const width = image.getWidth();
+  const height = image.getHeight();
+  const scale = Math.min(560 / width, 700 / height, 1);
+  image.setWidth(Math.max(1, Math.round(width * scale)));
+  image.setHeight(Math.max(1, Math.round(height * scale)));
+  const footer = body.appendParagraph("Apps By Prateek Agarwal");
+  footer.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+  footer.editAsText().setBold(true);
+  document.saveAndClose();
+  const source = DriveApp.getFileById(document.getId());
+  const pdf = recordFolder_(status, formName).createFile(source.getBlob().getAs(MimeType.PDF).setName(fileName));
+  source.setTrashed(true);
+  return pdf.getUrl();
+}
+
+function imageBlobFromUrl_(url) {
+  const match = String(url || "").match(/[-\w]{25,}/);
+  if (!match) return null;
+  try { return DriveApp.getFileById(match[0]).getBlob(); } catch (error) { return null; }
 }
 
 function trashFileByUrl_(url) {
@@ -338,7 +371,10 @@ function recordApproval_(id, role, decision, token) {
               createdAt: String(sheet.getRange(row, 5).getValue() || ""),
               updatedAt: new Date().toISOString()
             };
-            const finalPdf = createRecordPdf_(finalRecord, data.approvalStatus);
+            const finalImageBlob = imageBlobFromUrl_(sheet.getRange(row, 7).getValue());
+            const finalPdf = finalImageBlob
+              ? createImagePdf_(finalRecord, data.approvalStatus, finalImageBlob)
+              : createRecordPdf_(finalRecord, data.approvalStatus);
             sheet.getRange(row, 8).setValue(finalPdf);
             if (oldPdf && oldPdf !== finalPdf) trashFileByUrl_(oldPdf);
           }
@@ -396,6 +432,23 @@ function uploadImage_(params) {
   const stampedName = statusLabel_(status).toUpperCase() + "_" + safeFilePart_(params.fileName);
   const blob = Utilities.newBlob(bytes, params.mimeType || "image/png", stampedName);
   const file = folder.createFile(blob);
-  if (row) sheet_().getRange(row, 7).setValue(file.getUrl());
+  if (row) {
+    const sheet = sheet_();
+    sheet.getRange(row, 7).setValue(file.getUrl());
+    const data = JSON.parse(String(sheet.getRange(row, 4).getValue() || "{}"));
+    const record = {
+      id: String(sheet.getRange(row, 1).getValue() || id),
+      formId: String(sheet.getRange(row, 2).getValue() || formId),
+      docId: String(sheet.getRange(row, 3).getValue() || ""),
+      data: data,
+      createdAt: String(sheet.getRange(row, 5).getValue() || ""),
+      updatedAt: String(sheet.getRange(row, 6).getValue() || "")
+    };
+    const oldPdf = String(sheet.getRange(row, 8).getValue() || "");
+    const imagePdf = createImagePdf_(record, status, blob);
+    sheet.getRange(row, 8).setValue(imagePdf);
+    sheet.getRange(row, 9).setValue(status);
+    if (oldPdf && oldPdf !== imagePdf) trashFileByUrl_(oldPdf);
+  }
   return file.getUrl();
 }
