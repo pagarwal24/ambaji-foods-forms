@@ -1007,7 +1007,7 @@
                     token:state.token || ''
                 });
                 const code = btoa(payload).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-                return CLOUD_URL + '?a=' + code;
+                return 'https://pagarwal24.github.io/ambaji-foods-forms/approval.html?a=' + code;
             }
             function shareApprovalOnWhatsApp(role) {
                 const roleLabel = role === 'production' ? 'Production Manager' : 'Parle Executive';
