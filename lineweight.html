@@ -997,6 +997,13 @@
                     element.style.color = state.status === 'approved' ? '#126b37' : state.status === 'rejected' ? '#a1261d' : '#000000';
                 });
             }
+            function overallApprovalStatus() {
+                const production = approvalState.production?.status || 'pending';
+                const parle = approvalState.parle?.status || 'pending';
+                if (production === 'rejected' || parle === 'rejected') return 'rejected';
+                if (production === 'approved' && parle === 'approved') return 'approved';
+                return 'pending';
+            }
             function whatsappNumber(value) {
                 const digits = String(value || '').replace(/\D/g, '');
                 return digits.length === 10 ? '91' + digits : digits;
@@ -1350,7 +1357,8 @@ async function renderFixedChartImage(sectionKey, weightsArr, lineLabel, lineColo
                     const rawDateStr = document.getElementById('ovenDate').value || document.getElementById('stackerDate').value || new Date().toISOString().slice(0,10);
                     const dateStr = normalizeDateDisplay(rawDateStr);
                     const timeStr = document.getElementById('ovenTimeDisplay').innerText || document.getElementById('stackerTimeDisplay').innerText || new Date().toLocaleTimeString('en-IN');
-                    const fileName = `Ambaji_Quality_Report_${rawDateStr.replace(/-/g, '')}.png`;
+                    const reportStatus = overallApprovalStatus();
+                    const fileName = `${reportStatus.toUpperCase()}_Ambaji_Quality_Report_${rawDateStr.replace(/-/g, '')}.png`;
 
                     function escapeHtml(v) {
                         return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -1467,6 +1475,7 @@ function buildSectionHtml(sectionKey, title, icon, weightsArr, chartImg, headerC
                                 <h1 style="color:#000000; margin:0; font-size:24px; line-height:1.25; font-weight:800;">Ambaji Foods (India) Private Limited, Kanpur</h1>
                                 <div style="color:#000000; font-size:18px; margin-top:2px; font-weight:800;">Process Parameter Line Weight Quality Report</div><div style="font-size:13px; color:#000000; margin-top:5px;">Version: 2.00 | Re-Issue Date: 01/04/26 | Document ID: AFIPL/PRD/FRM/20</div>
                                 <div style="font-size:14px; color:#000000; margin-top:5px;">Date: ${dateStr} &nbsp;&nbsp;|&nbsp;&nbsp; Shift: ${getDisplayShift()} &nbsp;&nbsp;|&nbsp;&nbsp; Time: ${timeStr}</div>
+                                <div style="display:inline-block; margin-top:8px; padding:7px 20px; border-radius:8px; background:${reportStatus==='approved'?'#168a45':reportStatus==='rejected'?'#a1261d':'#d6a84b'}; color:${reportStatus==='pending'?'#000000':'#ffffff'}; font-size:16px; font-weight:900;">STATUS: ${reportStatus.toUpperCase()}</div>
                             </div>
                             ${sections.join('')}
                             <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:14px; margin-top:10px; margin-bottom:8px;">
