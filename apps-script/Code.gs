@@ -185,10 +185,6 @@ function createRecordPdf_(record, status) {
   company.setHeading(DocumentApp.ParagraphHeading.HEADING1).setAlignment(DocumentApp.HorizontalAlignment.CENTER);
   const formTitle = body.appendParagraph(formName);
   formTitle.setHeading(DocumentApp.ParagraphHeading.HEADING2).setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-  const statusParagraph = body.appendParagraph("STATUS: " + statusText.toUpperCase());
-  statusParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-  statusParagraph.editAsText().setBold(true).setFontSize(18)
-    .setForegroundColor(statusText === "Approved" ? "#168A45" : statusText === "Rejected" ? "#A1261D" : "#9A6500");
   body.appendParagraph("Document ID: " + docNumber);
   body.appendParagraph("Record ID: " + String(record.id || "—"));
   body.appendParagraph("Generated: " + timestamp);
@@ -205,8 +201,12 @@ function createRecordPdf_(record, status) {
   table.getRow(0).getCell(1).editAsText().setBold(true);
   body.appendHorizontalRule();
   const approvals = (record.data || {}).approvals || {};
-  body.appendParagraph("Production approval: " + statusLabel_((approvals.production || {}).status));
-  body.appendParagraph("Parle approval: " + statusLabel_((approvals.parle || {}).status));
+  if (String((approvals.production || {}).status || "") === "approved") {
+    body.appendParagraph("Production Manager: " + String((approvals.production || {}).name || ""));
+  }
+  if (String((approvals.parle || {}).status || "") === "approved") {
+    body.appendParagraph("Parle Executive: " + String((approvals.parle || {}).name || record.data.parleName || "Prateek Agarwal"));
+  }
   const footer = body.appendParagraph("Apps By Prateek Agarwal");
   footer.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
   footer.editAsText().setBold(true);
@@ -225,10 +225,6 @@ function createImagePdf_(record, status, imageBlob) {
   const body = document.getBody();
   body.clear();
   body.setMarginTop(18).setMarginBottom(18).setMarginLeft(18).setMarginRight(18);
-  const statusParagraph = body.appendParagraph("STATUS: " + statusText.toUpperCase());
-  statusParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-  statusParagraph.editAsText().setBold(true).setFontSize(18)
-    .setForegroundColor(statusText === "Approved" ? "#168A45" : statusText === "Rejected" ? "#A1261D" : "#9A6500");
   const imageParagraph = body.appendParagraph("");
   imageParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
   const image = imageParagraph.appendInlineImage(imageBlob);
@@ -237,6 +233,20 @@ function createImagePdf_(record, status, imageBlob) {
   const scale = Math.min(560 / width, 700 / height, 1);
   image.setWidth(Math.max(1, Math.round(width * scale)));
   image.setHeight(Math.max(1, Math.round(height * scale)));
+  const approvals = (record.data || {}).approvals || {};
+  const parleApproval = approvals.parle || {};
+  if (String(parleApproval.status || "") === "approved") {
+    const approvedBy = String(parleApproval.name || record.data.parleName || "Prateek Agarwal");
+    const approvedAt = parleApproval.signedAt ? Utilities.formatDate(
+      new Date(parleApproval.signedAt),
+      "Asia/Kolkata",
+      "dd/MM/yyyy hh:mm a"
+    ) : "";
+    const approvalLine = body.appendParagraph("Approved by Parle Executive: " + approvedBy +
+      (approvedAt ? " · " + approvedAt : ""));
+    approvalLine.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+    approvalLine.editAsText().setBold(true).setForegroundColor("#168A45");
+  }
   const footer = body.appendParagraph("Apps By Prateek Agarwal");
   footer.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
   footer.editAsText().setBold(true);
@@ -367,6 +377,7 @@ function recordApproval_(id, role, decision, token) {
         if (String(approval.token || "") === token) {
           approval.status = decision;
           approval.signedAt = new Date().toISOString();
+          if (role === "parle" && !approval.name) approval.name = String(data.parleName || "Prateek Agarwal");
           approvals[role] = approval;
           data.approvals = approvals;
           const productionStatus = String((approvals.production || {}).status || "pending");
@@ -374,7 +385,7 @@ function recordApproval_(id, role, decision, token) {
           if (productionStatus === "rejected" || parleStatus === "rejected") {
             data.approvalStatus = "rejected";
             data.rejectedAt = new Date().toISOString();
-          } else if (productionStatus === "approved" && parleStatus === "approved") {
+          } else if (parleStatus === "approved") {
             data.approvalStatus = "approved";
             data.submittedAt = new Date().toISOString();
           } else {
