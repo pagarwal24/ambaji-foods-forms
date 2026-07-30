@@ -201,12 +201,25 @@ function createRecordPdf_(record, status) {
   table.getRow(0).getCell(1).editAsText().setBold(true);
   body.appendHorizontalRule();
   const approvals = (record.data || {}).approvals || {};
-  if (String((approvals.production || {}).status || "") === "approved") {
-    body.appendParagraph("Production Manager: " + String((approvals.production || {}).name || ""));
+  const productionApproval = approvals.production || {};
+  const parleApproval = approvals.parle || {};
+  const productionName = String(productionApproval.status || "") === "approved"
+    ? String(productionApproval.name || record.data.productionName || "Production Manager") : "";
+  const parleName = String(parleApproval.status || "") === "approved"
+    ? String(parleApproval.name || record.data.parleName || "Prateek Agarwal") : "";
+  const productionTime = productionName && productionApproval.signedAt
+    ? Utilities.formatDate(new Date(productionApproval.signedAt), "Asia/Kolkata", "dd/MM/yyyy hh:mm a") : "";
+  const parleTime = parleName && parleApproval.signedAt
+    ? Utilities.formatDate(new Date(parleApproval.signedAt), "Asia/Kolkata", "dd/MM/yyyy hh:mm a") : "";
+  const signatories = body.appendTable([
+    ["Document Filler", "Production Manager", "Parle Executive"],
+    ["", productionName + (productionTime ? "\n" + productionTime : ""), parleName + (parleTime ? "\n" + parleTime : "")]
+  ]);
+  for (let column = 0; column < 3; column++) {
+    signatories.getRow(0).getCell(column).editAsText().setBold(true);
+    signatories.getRow(0).getCell(column).setBackgroundColor("#E7EFE9");
   }
-  if (String((approvals.parle || {}).status || "") === "approved") {
-    body.appendParagraph("Parle Executive: " + String((approvals.parle || {}).name || record.data.parleName || "Prateek Agarwal"));
-  }
+  signatories.setBorderColor("#174B3A").setBorderWidth(1);
   const footer = body.appendParagraph("Apps By Prateek Agarwal");
   footer.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
   footer.editAsText().setBold(true);
@@ -411,15 +424,19 @@ function recordApproval_(id, role, decision, token) {
               updatedAt: new Date().toISOString()
             };
             const finalImageBlob = imageBlobFromUrl_(oldImage);
-            if (finalImageBlob) {
+            const isLineWeight = String(finalRecord.formId || "") === "line-weight-control";
+            if (finalImageBlob && isLineWeight) {
               const finalImageName = statusLabel_(data.approvalStatus).toUpperCase() + "_" +
                 safeFilePart_(finalRecord.formId) + "_" + safeFilePart_(finalRecord.id) + ".png";
               const finalImage = recordFolder_(data.approvalStatus, finalRecord.formId)
                 .createFile(finalImageBlob.copyBlob().setName(finalImageName));
               sheet.getRange(row, 7).setValue(finalImage.getUrl());
               if (oldImage && oldImage !== finalImage.getUrl()) trashFileByUrl_(oldImage);
+            } else if (!isLineWeight && oldImage) {
+              trashFileByUrl_(oldImage);
+              sheet.getRange(row, 7).setValue("");
             }
-            const finalPdf = finalImageBlob
+            const finalPdf = finalImageBlob && isLineWeight
               ? createImagePdf_(finalRecord, data.approvalStatus, finalImageBlob)
               : createRecordPdf_(finalRecord, data.approvalStatus);
             sheet.getRange(row, 8).setValue(finalPdf);
