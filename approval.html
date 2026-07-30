@@ -42,7 +42,17 @@
         const decision=approval.decision==='approved'?'Approved':approval.decision==='rejected'?'Rejected':'Invalid';
         if(!validRole||decision==='Invalid'||!approval.token) throw new Error('Invalid link');
         document.getElementById('details').innerHTML=`<div><b>Form:</b> ${safe(approval.title||'Ambaji Foods Record')}</div><div><b>Document:</b> ${safe(approval.doc||'—')}</div><div><b>Decision:</b> ${decision}</div>`;
-        await fetch(CLOUD_URL,{method:'POST',mode:'no-cors',body:new URLSearchParams({action:'approvalCode',code})});
+        const result=await new Promise((resolve,reject)=>{
+          const callback='ambajiApproval_'+Date.now();
+          const script=document.createElement('script');
+          const timer=setTimeout(()=>{cleanup();reject(new Error('Approval request timed out'))},20000);
+          function cleanup(){clearTimeout(timer);delete window[callback];script.remove()}
+          window[callback]=data=>{cleanup();resolve(data||{})};
+          script.onerror=()=>{cleanup();reject(new Error('Approval service could not be reached'))};
+          script.src=CLOUD_URL+'?action=approvalCode&code='+encodeURIComponent(code)+'&callback='+callback;
+          document.head.appendChild(script);
+        });
+        if(!result.ok) throw new Error(result.message||'Approval link invalid or expired');
         document.getElementById('mark').textContent='✓';
         document.getElementById('mark').style.background=approval.decision==='approved'?'#168a45':'#a1261d';
         document.getElementById('title').textContent=`Report ${decision.toLowerCase()}`;
@@ -51,7 +61,7 @@
         document.getElementById('mark').textContent='!';
         document.getElementById('mark').style.background='#a1261d';
         document.getElementById('title').textContent='Approval link invalid';
-        document.getElementById('status').textContent='Please request a new approval message from the document filler.';
+        document.getElementById('status').textContent=error?.message||'Please request a new approval message from the document filler.';
         document.getElementById('details').style.display='none';
       }
     }
