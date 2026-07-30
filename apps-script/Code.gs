@@ -363,6 +363,7 @@ function recordApproval_(id, role, decision, token) {
           sheet.getRange(row, 9).setValue(data.approvalStatus);
           if (data.approvalStatus === "approved" || data.approvalStatus === "rejected") {
             const oldPdf = String(sheet.getRange(row, 8).getValue() || "");
+            const oldImage = String(sheet.getRange(row, 7).getValue() || "");
             const finalRecord = {
               id: String(sheet.getRange(row, 1).getValue() || id),
               formId: String(sheet.getRange(row, 2).getValue() || "form"),
@@ -371,7 +372,15 @@ function recordApproval_(id, role, decision, token) {
               createdAt: String(sheet.getRange(row, 5).getValue() || ""),
               updatedAt: new Date().toISOString()
             };
-            const finalImageBlob = imageBlobFromUrl_(sheet.getRange(row, 7).getValue());
+            const finalImageBlob = imageBlobFromUrl_(oldImage);
+            if (finalImageBlob) {
+              const finalImageName = statusLabel_(data.approvalStatus).toUpperCase() + "_" +
+                safeFilePart_(finalRecord.formId) + "_" + safeFilePart_(finalRecord.id) + ".png";
+              const finalImage = recordFolder_(data.approvalStatus, finalRecord.formId)
+                .createFile(finalImageBlob.copyBlob().setName(finalImageName));
+              sheet.getRange(row, 7).setValue(finalImage.getUrl());
+              if (oldImage && oldImage !== finalImage.getUrl()) trashFileByUrl_(oldImage);
+            }
             const finalPdf = finalImageBlob
               ? createImagePdf_(finalRecord, data.approvalStatus, finalImageBlob)
               : createRecordPdf_(finalRecord, data.approvalStatus);
