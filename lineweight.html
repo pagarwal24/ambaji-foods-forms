@@ -669,8 +669,8 @@
                 <button id="globalResetBtn" class="btn-reset">🔄 Reset All Data</button>
                 <button id="saveSessionBtn" class="btn-primary">💾 Save Session</button>
                 <button id="loadSessionBtn" class="btn-primary">📂 Load Session</button>
-                <button id="lineApprovalOne" class="btn-whatsapp-text" style="display:none">Send Approval Request 1</button>
-                <button id="lineApprovalTwo" class="btn-whatsapp-text" style="display:none">Send Approval Request 2</button>
+                <button id="lineApprovalOne" class="btn-whatsapp-text" style="display:none">Send Approval 1 · Production Manager</button>
+                <button id="lineApprovalTwo" class="btn-whatsapp-text" style="display:none">Send Approval 2 · Parle Team</button>
             </div>
 
             <div id="loadingModal" class="modal"><div class="modal-content"><h3>🍪 Generating A4 Report...</h3><div class="spinner"></div><p>Please wait</p></div></div>
@@ -1054,6 +1054,8 @@
                 window.open(`https://wa.me/${mobile}?text=${encodeURIComponent(message)}`, '_blank');
             }
             function showApprovalShareButtons() {
+                document.getElementById('lineApprovalOne').textContent = 'Send Approval 1 · Production Manager';
+                document.getElementById('lineApprovalTwo').textContent = 'Send Approval 2 · Parle Team';
                 document.getElementById('shareProductionApproval').style.display = approvalState.production?.token ? 'block' : 'none';
                 document.getElementById('shareParleApproval').style.display = approvalState.parle?.token ? 'block' : 'none';
                 document.getElementById('lineApprovalOne').style.display = approvalState.production?.token ? 'inline-flex' : 'none';
