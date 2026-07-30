@@ -234,18 +234,22 @@ function createImagePdf_(record, status, imageBlob) {
   image.setWidth(Math.max(1, Math.round(width * scale)));
   image.setHeight(Math.max(1, Math.round(height * scale)));
   const approvals = (record.data || {}).approvals || {};
-  const parleApproval = approvals.parle || {};
-  if (String(parleApproval.status || "") === "approved") {
-    const approvedBy = String(parleApproval.name || record.data.parleName || "Prateek Agarwal");
-    const approvedAt = parleApproval.signedAt ? Utilities.formatDate(
-      new Date(parleApproval.signedAt),
-      "Asia/Kolkata",
-      "dd/MM/yyyy hh:mm a"
-    ) : "";
-    const approvalLine = body.appendParagraph("Approved by Parle Executive: " + approvedBy +
-      (approvedAt ? " · " + approvedAt : ""));
-    approvalLine.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-    approvalLine.editAsText().setBold(true).setForegroundColor("#168A45");
+  if (String(record.formId || "") !== "line-weight-control") {
+    const productionApproval = approvals.production || {};
+    const parleApproval = approvals.parle || {};
+    const productionName = String(productionApproval.status || "") === "approved"
+      ? String(productionApproval.name || record.data.productionName || "Production Manager") : "";
+    const parleName = String(parleApproval.status || "") === "approved"
+      ? String(parleApproval.name || record.data.parleName || "Prateek Agarwal") : "";
+    const signatories = body.appendTable([
+      ["Document Filler", "Production Manager", "Parle Executive"],
+      ["", productionName, parleName]
+    ]);
+    for (let column = 0; column < 3; column++) {
+      signatories.getRow(0).getCell(column).editAsText().setBold(true);
+      signatories.getRow(0).getCell(column).setBackgroundColor("#E7EFE9");
+    }
+    signatories.setBorderColor("#174B3A").setBorderWidth(1);
   }
   const footer = body.appendParagraph("Apps By Prateek Agarwal");
   footer.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
@@ -377,6 +381,7 @@ function recordApproval_(id, role, decision, token) {
         if (String(approval.token || "") === token) {
           approval.status = decision;
           approval.signedAt = new Date().toISOString();
+          if (role === "production" && !approval.name) approval.name = String(data.productionName || "Production Manager");
           if (role === "parle" && !approval.name) approval.name = String(data.parleName || "Prateek Agarwal");
           approvals[role] = approval;
           data.approvals = approvals;
