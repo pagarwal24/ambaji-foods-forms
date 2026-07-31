@@ -85,9 +85,9 @@
   <section class="selector-screen" id="selectorScreen">
     <div class="selector-inner">
       <div class="selector-brand"><div class="selector-logo">AF</div><span>Ambaji Foods Pvt. Ltd.</span></div>
-      <h1 class="selector-title">Quality Forms Selector</h1>
-      <p class="selector-subtitle">Choose an operational or laboratory record to begin. Every entry stays organized by form and can be searched, printed, or exported.</p>
-      <div class="selector-label">Select a form</div>
+      <h1 class="selector-title" id="selectorTitle">Quality Forms Selector</h1>
+      <p class="selector-subtitle" id="selectorSubtitle">Choose a forms folder to begin.</p>
+      <div class="selector-label" id="selectorLabel">Select a folder</div>
       <div class="selector-grid" id="selectorGrid"></div>
       <div class="selector-footer">AFPL Quality & Operations Record System · Data is saved locally in this browser<br><strong>Apps By Prateek Agarwal</strong></div>
     </div>
@@ -147,7 +147,7 @@
     ];
     const selectOptions={shift:["","A","B","C","General"],boxStamping:["","Pass","Hold","Reject"],boxTaping:["","Pass","Hold","Reject"],partitions:["","Pass","Hold","Reject"],polybagSealing:["","Pass","Hold","Reject"],packetSealing:["","Pass","Hold","Reject"],appearance:["","Pass","Hold","Reject"],material:["","Water","RBD","Maida","Invert Syrup","Ground Sugar","Dough","Biscuit","Recycle Biscuit"],frequency:["","Daily","Weekly","Fortnightly","Monthly","Quarterly"],standard:["","4.0 pH","7.0 pH","9.2 pH"],plant:["","Plant 1","Plant 2"],status:["","Passed","Hold","Rejected"]};
 const CLOUD_URL="https://script.google.com/macros/s/AKfycbyi8DlI-5tHZUy8wOW35CJFpH65bsDU6Vx-H_ceNsGl5RzjvXAprYmWHXbB4G31PDw0/exec";
-    let recordsCache=[],current=forms[0],editing=null,pendingApprovalRecord=null; const $=s=>document.querySelector(s);
+    let recordsCache=[],current=forms[0],editing=null,pendingApprovalRecord=null,selectorMode="folders"; const $=s=>document.querySelector(s);
     const APPROVAL_PAGE="https://pagarwal24.github.io/ambaji-foods-forms/approval.html";
     const APPROVAL_MOBILES={production:"919838654270",parle:"919795500700"};
     const load=()=>recordsCache;
@@ -177,10 +177,26 @@ const CLOUD_URL="https://script.google.com/macros/s/AKfycbyi8DlI-5tHZUy8wOW35CJF
     $("#approvalOneBtn").onclick=()=>sendApproval("production");
     $("#approvalTwoBtn").onclick=()=>sendApproval("parle");
     function initSelector(){
+      if(selectorMode==="folders"){
+        $("#selectorTitle").textContent="Quality Forms Selector";
+        $("#selectorSubtitle").textContent="Choose a forms folder to begin.";
+        $("#selectorLabel").textContent="Select a folder";
+        $("#selectorGrid").innerHTML=
+          `<button class="selector-card" id="qaMarketFolder"><strong>1. QA Check For Market Complaints</strong><span>Section-wise quality checks, findings, photos and approvals</span></button>`+
+          `<button class="selector-card" id="dailyFormsFolder"><strong>2. Daily Forms</strong><span>Operational, production and laboratory records</span></button>`;
+        $("#qaMarketFolder").onclick=()=>window.location.href="qa-market-complaints.html";
+        $("#dailyFormsFolder").onclick=()=>{selectorMode="daily";initSelector()};
+        return;
+      }
+      $("#selectorTitle").textContent="Daily Forms";
+      $("#selectorSubtitle").textContent="Choose an operational or laboratory record to begin. Every entry can be saved, shared and sent for approval.";
+      $("#selectorLabel").textContent="Select a form";
       $("#selectorGrid").innerHTML=forms.map(f=>`<button class="selector-card" data-select="${f.id}"><strong>${f.title}</strong><span>${f.doc}</span></button>`).join("")+
-        `<button class="selector-card" id="lineWeightTool"><strong>Line Weight Control</strong><span>AFIPL/PRD/FRM/20 · Oven & Stacker</span></button>`;
+        `<button class="selector-card" id="lineWeightTool"><strong>Line Weight Control</strong><span>AFIPL/PRD/FRM/20 · Oven & Stacker</span></button>`+
+        `<button class="selector-card" id="folderBack"><strong>← Back to folders</strong><span>Return to the two main form folders</span></button>`;
       document.querySelectorAll("[data-select]").forEach(b=>b.onclick=()=>openWorkspace(b.dataset.select));
       $("#lineWeightTool").onclick=()=>window.location.href="lineweight.html";
+      $("#folderBack").onclick=()=>{selectorMode="folders";initSelector()};
     }
     function openWorkspace(id){$("#selectorScreen").classList.add("selector-hidden");$("#appWorkspace").classList.remove("selector-hidden");selectForm(id);window.scrollTo({top:0,behavior:"instant"});}
     function showSelector(){editing=null;$("#appWorkspace").classList.add("selector-hidden");$("#selectorScreen").classList.remove("selector-hidden");initSelector();window.scrollTo({top:0,behavior:"instant"});}
