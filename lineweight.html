@@ -659,15 +659,16 @@
             </div>
 
             <div class="report-options">
-                <button id="whatsappTextBtn" class="report-btn btn-whatsapp-text">💬 WhatsApp Report (Text)</button>
-                <button id="whatsappImageBtn" class="report-btn btn-whatsapp-image">🖼️ WhatsApp Report (Image)</button>
-                <button id="exportPdfBtn" class="report-btn btn-primary">📄 Export PDF</button>
+                <button id="whatsappImageBtn" class="report-btn btn-whatsapp-image">WhatsApp Sharing</button>
+                <button id="exportPdfBtn" class="report-btn btn-primary">PDF Download</button>
+                <button id="downloadImageBtn" class="report-btn btn-primary">Image Download</button>
+                <button id="whatsappTextBtn" class="report-btn btn-whatsapp-text">WhatsApp Text</button>
                 <button id="exportExcelBtn" class="report-btn btn-excel">📊 Export Excel (Full Report)</button>
             </div>
 
             <div class="global-buttons">
                 <button id="globalResetBtn" class="btn-reset">🔄 Reset All Data</button>
-                <button id="saveSessionBtn" class="btn-primary">💾 Save Session</button>
+                <button id="saveSessionBtn" class="btn-primary">Save Record</button>
                 <button id="loadSessionBtn" class="btn-primary">📂 Load Session</button>
                 <button id="lineApprovalOne" class="btn-whatsapp-text" style="display:none">Send Approval 1 · Production Manager</button>
                 <button id="lineApprovalTwo" class="btn-whatsapp-text" style="display:none">Send Approval 2 · Parle Team</button>
@@ -1210,7 +1211,7 @@
                     showToast('Browser backup saved · ' + message);
                 } finally {
                     button.disabled = false;
-                    button.textContent = '💾 Save Session';
+                    button.textContent = 'Save Record';
                 }
             };
             updateApprovalDisplay();
@@ -1695,6 +1696,9 @@ function formatSectionReport(sectionKey, title, emoji, weightsArr) {
                 setTimeout(() => {
                     window.open(`https://wa.me/?text=${encodeURIComponent("📸 *Ambaji Foods (India) Private Limited, Kanpur - Quality Report Image Attached*\n\nImage downloaded. Summary:\n\n" + textSummary)}`, '_blank');
                 }, 800);
+            };
+            document.getElementById('downloadImageBtn').onclick = async () => {
+                await generateA4ReportImage({ downloadImage: true, shareImage: false, theme: 'color' });
             };
             document.getElementById('exportPdfBtn').onclick = async () => {
                 try {
