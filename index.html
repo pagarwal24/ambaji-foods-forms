@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Ambaji Foods | Quality & Operations Forms</title>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <style>
     :root{--green:#174b3a;--green2:#21654e;--gold:#d6a84b;--cream:#f7f4ec;--ink:#17312a;--muted:#64746d;--line:#d7ded9;--danger:#a6382f;--white:#fff}
     *{box-sizing:border-box} body{margin:0;background:var(--cream);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -104,11 +105,12 @@
         <div class="panel-head"><div><div class="eyebrow">Data entry</div><h2 id="formTitle"></h2><p class="subtitle" id="formDescription"></p></div><div class="doc-id" id="docId"></div></div>
         <div class="notice">Records are saved in this browser on this device. CSV export is available for Excel and record transfer.</div>
         <form id="entryForm"><div class="form-grid" id="fields"></div><div class="actions">
-          <button class="btn primary" type="submit" id="saveBtn">Save record</button>
+          <button class="btn primary" type="submit" id="saveBtn">Save Record</button>
           <button class="btn" type="button" id="newBtn">Clear form</button>
           <button class="btn" type="button" onclick="window.print()">Print form</button>
-          <button class="btn gold" type="button" id="imageBtn">Save as Image</button>
-          <button class="btn whatsapp" type="button" id="whatsappBtn">Share on WhatsApp</button>
+          <button class="btn gold" type="button" id="pdfBtn">PDF Download</button>
+          <button class="btn gold" type="button" id="imageBtn">Image Download</button>
+          <button class="btn whatsapp" type="button" id="whatsappBtn">WhatsApp Sharing</button>
           <button class="btn whatsapp" type="button" id="approvalOneBtn" style="display:none">Send Approval 1 · Production Manager</button>
           <button class="btn whatsapp" type="button" id="approvalTwoBtn" style="display:none">Send Approval 2 · Parle Team</button>
         </div></form>
@@ -202,9 +204,9 @@ const CLOUD_URL="https://script.google.com/macros/s/AKfycbyi8DlI-5tHZUy8wOW35CJF
     function showSelector(){editing=null;$("#appWorkspace").classList.add("selector-hidden");$("#selectorScreen").classList.remove("selector-hidden");initSelector();window.scrollTo({top:0,behavior:"instant"});}
     function initNav(){ $("#nav").innerHTML=forms.map(f=>`<button class="nav-btn" data-id="${f.id}"><span>${f.title}</span><span class="badge">${load().filter(r=>r.formId===f.id).length}</span></button>`).join("");document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>selectForm(b.dataset.id));}
     function selectForm(id){current=forms.find(f=>f.id===id);editing=null;$("#formTitle").textContent=current.title;$("#formDescription").textContent=current.desc;$("#docId").textContent=current.doc;renderFields();renderRecords();initNav();document.querySelector(`[data-id="${id}"]`)?.classList.add("active");}
-    function renderFields(data={}){$("#fields").innerHTML=current.fields.map(f=>{const cls=f.wide==="full"?"full":f.wide?"wide":"";const val=data[f.key]??"";let control;if(f.type==="textarea")control=`<textarea name="${f.key}">${esc(val)}</textarea>`;else if(f.type==="select"){const opts=selectOptions[f.key]||["","Yes","No","N/A"];control=`<select name="${f.key}">${opts.map(o=>`<option ${o===val?"selected":""}>${esc(o)}</option>`).join("")}</select>`}else control=`<input name="${f.key}" type="${f.type}" value="${esc(val)}" ${f.type==="number"?'step="any"':""}>`;return `<div class="field ${cls}"><label>${f.label}</label>${control}</div>`}).join("");$("#saveBtn").textContent=editing?"Update record":"Save record";}
+    function renderFields(data={}){$("#fields").innerHTML=current.fields.map(f=>{const cls=f.wide==="full"?"full":f.wide?"wide":"";const val=data[f.key]??"";let control;if(f.type==="textarea")control=`<textarea name="${f.key}">${esc(val)}</textarea>`;else if(f.type==="select"){const opts=selectOptions[f.key]||["","Yes","No","N/A"];control=`<select name="${f.key}">${opts.map(o=>`<option ${o===val?"selected":""}>${esc(o)}</option>`).join("")}</select>`}else control=`<input name="${f.key}" type="${f.type}" value="${esc(val)}" ${f.type==="number"?'step="any"':""}>`;return `<div class="field ${cls}"><label>${f.label}</label>${control}</div>`}).join("");$("#saveBtn").textContent=editing?"Update Record":"Save Record";}
     function esc(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-    $("#entryForm").onsubmit=async e=>{e.preventDefault();if(!cloudReady()){alert("Add the deployed Google Apps Script URL to CLOUD_URL before using online storage.");return}const button=$("#saveBtn"),data=Object.fromEntries(new FormData(e.target)),now=new Date().toISOString();let record;if(editing){const old=load().find(r=>r.id===editing);record={...old,data:{...data,approvals:{production:{status:"pending",token:approvalToken()},parle:{status:"pending",token:approvalToken()}},approvalStatus:"pending"},updatedAt:now}}else record={id:crypto.randomUUID?crypto.randomUUID():Date.now().toString(36),formId:current.id,docId:current.doc,data:{...data,approvals:{production:{status:"pending",token:approvalToken()},parle:{status:"pending",token:approvalToken()}},approvalStatus:"pending"},createdAt:now,updatedAt:now};button.disabled=true;button.textContent="Saving findings…";try{await postCloud({action:"upsert",record:JSON.stringify(record)});const blob=await createRecordImage(record);await uploadRecordImage(blob,record);const i=recordsCache.findIndex(r=>r.id===record.id);if(i>=0)recordsCache[i]=record;else recordsCache.push(record);$("#saveStatus").textContent="Pending digital approval · "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});toast("Record saved · send Approval 1 and Approval 2");showApprovalButtons(record);editing=null;e.target.reset();renderFields();renderRecords();initNav()}catch(err){alert("The record could not be saved. "+err.message)}finally{button.disabled=false;button.textContent=editing?"Update record":"Save record"}};
+    $("#entryForm").onsubmit=async e=>{e.preventDefault();if(!cloudReady()){alert("Add the deployed Google Apps Script URL to CLOUD_URL before using online storage.");return}const button=$("#saveBtn"),data=Object.fromEntries(new FormData(e.target)),now=new Date().toISOString();let record;if(editing){const old=load().find(r=>r.id===editing);record={...old,data:{...data,approvals:{production:{status:"pending",token:approvalToken()},parle:{status:"pending",token:approvalToken()}},approvalStatus:"pending"},updatedAt:now}}else record={id:crypto.randomUUID?crypto.randomUUID():Date.now().toString(36),formId:current.id,docId:current.doc,data:{...data,approvals:{production:{status:"pending",token:approvalToken()},parle:{status:"pending",token:approvalToken()}},approvalStatus:"pending"},createdAt:now,updatedAt:now};button.disabled=true;button.textContent="Saving findings…";try{await postCloud({action:"upsert",record:JSON.stringify(record)});const blob=await createRecordImage(record);await uploadRecordImage(blob,record);const i=recordsCache.findIndex(r=>r.id===record.id);if(i>=0)recordsCache[i]=record;else recordsCache.push(record);$("#saveStatus").textContent="Pending digital approval · "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});toast("Record saved · send Approval 1 and Approval 2");showApprovalButtons(record);editing=null;e.target.reset();renderFields();renderRecords();initNav()}catch(err){alert("The record could not be saved. "+err.message)}finally{button.disabled=false;button.textContent=editing?"Update Record":"Save Record"}};
     $("#newBtn").onclick=()=>{editing=null;$("#entryForm").reset();renderFields()};
     function currentFormData(){return Object.fromEntries(new FormData($("#entryForm")))}
     function wrapCanvasText(ctx,text,maxWidth){const words=String(text||"—").split(/\s+/),lines=[];let line="";for(const word of words){const test=line?line+" "+word:word;if(ctx.measureText(test).width>maxWidth&&line){lines.push(line);line=word}else line=test}if(line)lines.push(line);return lines}
@@ -233,6 +235,14 @@ const CLOUD_URL="https://script.google.com/macros/s/AKfycbyi8DlI-5tHZUy8wOW35CJF
     async function uploadRecordImage(blob,record){await postCloud({action:"upload",recordId:record.id,fileName:imageFileName(),mimeType:"image/png",base64:await blobToBase64(blob)})}
     function downloadBlob(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),800)}
     $("#imageBtn").onclick=async()=>{const blob=await createRecordImage();downloadBlob(blob,imageFileName());toast("Image file created")};
+    $("#pdfBtn").onclick=async()=>{
+      const blob=await createRecordImage(),imageData=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob)});
+      const {jsPDF}=window.jspdf,pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4",compress:true}),pageW=pdf.internal.pageSize.getWidth(),pageH=pdf.internal.pageSize.getHeight();
+      const image=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=imageData});
+      const scale=Math.min(pageW/image.width,pageH/image.height),w=image.width*scale,h=image.height*scale;
+      pdf.addImage(imageData,"PNG",(pageW-w)/2,(pageH-h)/2,w,h,undefined,"FAST");
+      pdf.save(imageFileName().replace(/\.png$/i,".pdf"));toast("PDF file created")
+    };
     $("#whatsappBtn").onclick=async()=>{
       const blob=await createRecordImage(),file=new File([blob],imageFileName(),{type:"image/png"}),text=`Ambaji Foods — ${current.title}\nDocument: ${current.doc}`;
       if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({title:current.title,text,files:[file]});toast("Share sheet opened");return}catch(e){if(e.name==="AbortError")return}}
